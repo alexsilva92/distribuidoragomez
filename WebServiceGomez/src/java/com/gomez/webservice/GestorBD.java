@@ -171,6 +171,14 @@ public class GestorBD {
             return false;
         }
     }
+
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "GetPedidosCliente")
+    public java.util.List<com.gomez.bd.modelo.PedidoCliente> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
+        return getPedidoClienteController().getPedidosPorCliente(cliente);
+    }
     
     
      
