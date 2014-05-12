@@ -23,9 +23,9 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.gomez.bd.modelo.EstadoPedido;
 import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.Distribuidor;
-import com.gomez.bd.modelo.EstadoPedido;
 import com.gomez.bd.modelo.PedidoDistribuidor;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -53,6 +53,11 @@ public class PedidoDistribuidorJpaController implements Serializable {
         try {
             utx.begin();
             em = getEntityManager();
+            EstadoPedido estado = pedidoDistribuidor.getEstado();
+            if (estado != null) {
+                estado = em.getReference(estado.getClass(), estado.getEstado());
+                pedidoDistribuidor.setEstado(estado);
+            }
             Empleado empleado = pedidoDistribuidor.getEmpleado();
             if (empleado != null) {
                 empleado = em.getReference(empleado.getClass(), empleado.getDni());
@@ -63,12 +68,11 @@ public class PedidoDistribuidorJpaController implements Serializable {
                 distribuidor = em.getReference(distribuidor.getClass(), distribuidor.getCifNif());
                 pedidoDistribuidor.setDistribuidor(distribuidor);
             }
-            EstadoPedido estado = pedidoDistribuidor.getEstado();
-            if (estado != null) {
-                estado = em.getReference(estado.getClass(), estado.getEstado());
-                pedidoDistribuidor.setEstado(estado);
-            }
             em.persist(pedidoDistribuidor);
+            if (estado != null) {
+                estado.getPedidoDistribuidorList().add(pedidoDistribuidor);
+                estado = em.merge(estado);
+            }
             if (empleado != null) {
                 empleado.getPedidoDistribuidorList().add(pedidoDistribuidor);
                 empleado = em.merge(empleado);
@@ -76,10 +80,6 @@ public class PedidoDistribuidorJpaController implements Serializable {
             if (distribuidor != null) {
                 distribuidor.getPedidoDistribuidorList().add(pedidoDistribuidor);
                 distribuidor = em.merge(distribuidor);
-            }
-            if (estado != null) {
-                estado.getPedidoDistribuidorList().add(pedidoDistribuidor);
-                estado = em.merge(estado);
             }
             utx.commit();
         } catch (Exception ex) {
@@ -102,12 +102,16 @@ public class PedidoDistribuidorJpaController implements Serializable {
             utx.begin();
             em = getEntityManager();
             PedidoDistribuidor persistentPedidoDistribuidor = em.find(PedidoDistribuidor.class, pedidoDistribuidor.getIdPedido());
+            EstadoPedido estadoOld = persistentPedidoDistribuidor.getEstado();
+            EstadoPedido estadoNew = pedidoDistribuidor.getEstado();
             Empleado empleadoOld = persistentPedidoDistribuidor.getEmpleado();
             Empleado empleadoNew = pedidoDistribuidor.getEmpleado();
             Distribuidor distribuidorOld = persistentPedidoDistribuidor.getDistribuidor();
             Distribuidor distribuidorNew = pedidoDistribuidor.getDistribuidor();
-            EstadoPedido estadoOld = persistentPedidoDistribuidor.getEstado();
-            EstadoPedido estadoNew = pedidoDistribuidor.getEstado();
+            if (estadoNew != null) {
+                estadoNew = em.getReference(estadoNew.getClass(), estadoNew.getEstado());
+                pedidoDistribuidor.setEstado(estadoNew);
+            }
             if (empleadoNew != null) {
                 empleadoNew = em.getReference(empleadoNew.getClass(), empleadoNew.getDni());
                 pedidoDistribuidor.setEmpleado(empleadoNew);
@@ -116,11 +120,15 @@ public class PedidoDistribuidorJpaController implements Serializable {
                 distribuidorNew = em.getReference(distribuidorNew.getClass(), distribuidorNew.getCifNif());
                 pedidoDistribuidor.setDistribuidor(distribuidorNew);
             }
-            if (estadoNew != null) {
-                estadoNew = em.getReference(estadoNew.getClass(), estadoNew.getEstado());
-                pedidoDistribuidor.setEstado(estadoNew);
-            }
             pedidoDistribuidor = em.merge(pedidoDistribuidor);
+            if (estadoOld != null && !estadoOld.equals(estadoNew)) {
+                estadoOld.getPedidoDistribuidorList().remove(pedidoDistribuidor);
+                estadoOld = em.merge(estadoOld);
+            }
+            if (estadoNew != null && !estadoNew.equals(estadoOld)) {
+                estadoNew.getPedidoDistribuidorList().add(pedidoDistribuidor);
+                estadoNew = em.merge(estadoNew);
+            }
             if (empleadoOld != null && !empleadoOld.equals(empleadoNew)) {
                 empleadoOld.getPedidoDistribuidorList().remove(pedidoDistribuidor);
                 empleadoOld = em.merge(empleadoOld);
@@ -136,14 +144,6 @@ public class PedidoDistribuidorJpaController implements Serializable {
             if (distribuidorNew != null && !distribuidorNew.equals(distribuidorOld)) {
                 distribuidorNew.getPedidoDistribuidorList().add(pedidoDistribuidor);
                 distribuidorNew = em.merge(distribuidorNew);
-            }
-            if (estadoOld != null && !estadoOld.equals(estadoNew)) {
-                estadoOld.getPedidoDistribuidorList().remove(pedidoDistribuidor);
-                estadoOld = em.merge(estadoOld);
-            }
-            if (estadoNew != null && !estadoNew.equals(estadoOld)) {
-                estadoNew.getPedidoDistribuidorList().add(pedidoDistribuidor);
-                estadoNew = em.merge(estadoNew);
             }
             utx.commit();
         } catch (Exception ex) {
@@ -179,6 +179,11 @@ public class PedidoDistribuidorJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The pedidoDistribuidor with id " + id + " no longer exists.", enfe);
             }
+            EstadoPedido estado = pedidoDistribuidor.getEstado();
+            if (estado != null) {
+                estado.getPedidoDistribuidorList().remove(pedidoDistribuidor);
+                estado = em.merge(estado);
+            }
             Empleado empleado = pedidoDistribuidor.getEmpleado();
             if (empleado != null) {
                 empleado.getPedidoDistribuidorList().remove(pedidoDistribuidor);
@@ -188,11 +193,6 @@ public class PedidoDistribuidorJpaController implements Serializable {
             if (distribuidor != null) {
                 distribuidor.getPedidoDistribuidorList().remove(pedidoDistribuidor);
                 distribuidor = em.merge(distribuidor);
-            }
-            EstadoPedido estado = pedidoDistribuidor.getEstado();
-            if (estado != null) {
-                estado.getPedidoDistribuidorList().remove(pedidoDistribuidor);
-                estado = em.merge(estado);
             }
             em.remove(pedidoDistribuidor);
             utx.commit();

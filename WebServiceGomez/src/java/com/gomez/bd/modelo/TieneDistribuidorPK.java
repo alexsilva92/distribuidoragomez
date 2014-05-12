@@ -24,34 +24,35 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
- * TienePedidoClientePK.java
+ * TieneDistribuidorPK.java
  * @author Alejandro Silva <alexsilva792@gmail.com>
  */
 @Embeddable
-public class TienePedidoClientePK implements Serializable {
+public class TieneDistribuidorPK implements Serializable {
     @Basic(optional = false)
     @NotNull
-    @Column(name = "pedido")
-    private int pedido;
+    @Size(min = 1, max = 9)
+    @Column(name = "distribuidor")
+    private String distribuidor;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 15)
+    @Size(min = 1, max = 45)
     @Column(name = "producto")
     private String producto;
 
-    public TienePedidoClientePK(){}
+    public TieneDistribuidorPK(){}
 
-    public TienePedidoClientePK(int pedido, String producto) {
-        this.pedido = pedido;
+    public TieneDistribuidorPK(String distribuidor, String producto) {
+        this.distribuidor = distribuidor;
         this.producto = producto;
     }
 
-    public int getPedido() {
-        return pedido;
+    public String getDistribuidor() {
+        return distribuidor;
     }
 
-    public void setPedido(int pedido) {
-        this.pedido = pedido;
+    public void setDistribuidor(String distribuidor) {
+        this.distribuidor = distribuidor;
     }
 
     public String getProducto() {
@@ -65,7 +66,7 @@ public class TienePedidoClientePK implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (int) pedido;
+        hash += (distribuidor != null ? distribuidor.hashCode() : 0);
         hash += (producto != null ? producto.hashCode() : 0);
         return hash;
     }
@@ -73,11 +74,11 @@ public class TienePedidoClientePK implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TienePedidoClientePK)) {
+        if (!(object instanceof TieneDistribuidorPK)) {
             return false;
         }
-        TienePedidoClientePK other = (TienePedidoClientePK) object;
-        if (this.pedido != other.pedido) {
+        TieneDistribuidorPK other = (TieneDistribuidorPK) object;
+        if ((this.distribuidor == null && other.distribuidor != null) || (this.distribuidor != null && !this.distribuidor.equals(other.distribuidor))) {
             return false;
         }
         if ((this.producto == null && other.producto != null) || (this.producto != null && !this.producto.equals(other.producto))) {
@@ -88,6 +89,6 @@ public class TienePedidoClientePK implements Serializable {
 
     @Override
     public String toString() {
-        return "com.gomez.bd.modelo.TienePedidoClientePK[ pedido=" + pedido + ", producto=" + producto + " ]";
+        return "com.gomez.bd.modelo.TieneDistribuidorPK[ distribuidor=" + distribuidor + ", producto=" + producto + " ]";
     }
 }

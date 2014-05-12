@@ -16,8 +16,6 @@ import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.PedidoCliente;
 import com.gomez.bd.modelo.Usuario;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -179,7 +177,4 @@ public class GestorBD {
     public java.util.List<com.gomez.bd.modelo.PedidoCliente> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
         return getPedidoClienteController().getPedidosPorCliente(cliente);
     }
-    
-    
-     
 }

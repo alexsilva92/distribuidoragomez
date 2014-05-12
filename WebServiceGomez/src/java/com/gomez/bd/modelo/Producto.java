@@ -1,7 +1,17 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2014 Alejandro Silva <alexsilva792@gmail.com>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gomez.bd.modelo;
@@ -16,6 +26,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -23,8 +34,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
- * @author Alex
+ * Producto.java
+ * @author Alejandro Silva <alexsilva792@gmail.com>
  */
 @Entity
 @Table(name = "Producto")
@@ -33,17 +44,11 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Producto.findAll", query = "SELECT p FROM Producto p"),
     @NamedQuery(name = "Producto.findByCodigo", query = "SELECT p FROM Producto p WHERE p.codigo = :codigo"),
     @NamedQuery(name = "Producto.findByNombre", query = "SELECT p FROM Producto p WHERE p.nombre = :nombre"),
-    @NamedQuery(name = "Producto.findByPrecio", query = "SELECT p FROM Producto p WHERE p.precio = :precio")})
+    @NamedQuery(name = "Producto.findByPrecio", query = "SELECT p FROM Producto p WHERE p.precio = :precio"),
+    @NamedQuery(name = "Producto.findByCategoria", query = "SELECT p FROM Producto p WHERE p.categoria = :categoria"),
+    @NamedQuery(name = "Producto.findBySubacategoria", query = "SELECT p FROM Producto p WHERE p.subacategoria = :subacategoria"),
+    @NamedQuery(name = "Producto.findByImagen", query = "SELECT p FROM Producto p WHERE p.imagen = :imagen")})
 public class Producto implements Serializable {
-    @Size(max = 45)
-    @Column(name = "categoria")
-    private String categoria;
-    @Size(max = 45)
-    @Column(name = "subacategoria")
-    private String subacategoria;
-    @Size(max = 100)
-    @Column(name = "imagen")
-    private String imagen;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -60,11 +65,23 @@ public class Producto implements Serializable {
     @NotNull
     @Column(name = "precio")
     private float precio;
+    @Size(max = 45)
+    @Column(name = "categoria")
+    private String categoria;
+    @Size(max = 45)
+    @Column(name = "subacategoria")
+    private String subacategoria;
+    @Size(max = 100)
+    @Column(name = "imagen")
+    private String imagen;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "producto1")
     private List<TienePedidoCliente> tienePedidoClienteList;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "producto1")
+    private Stock stock;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "producto1")
+    private List<TieneDistribuidor> tieneDistribuidorList;
 
-    public Producto() {
-    }
+    public Producto(){}
 
     public Producto(String codigo) {
         this.codigo = codigo;
@@ -100,6 +117,30 @@ public class Producto implements Serializable {
         this.precio = precio;
     }
 
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public String getSubacategoria() {
+        return subacategoria;
+    }
+
+    public void setSubacategoria(String subacategoria) {
+        this.subacategoria = subacategoria;
+    }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
+
     @XmlTransient
     public List<TienePedidoCliente> getTienePedidoClienteList() {
         return tienePedidoClienteList;
@@ -107,6 +148,23 @@ public class Producto implements Serializable {
 
     public void setTienePedidoClienteList(List<TienePedidoCliente> tienePedidoClienteList) {
         this.tienePedidoClienteList = tienePedidoClienteList;
+    }
+
+    public Stock getStock() {
+        return stock;
+    }
+
+    public void setStock(Stock stock) {
+        this.stock = stock;
+    }
+
+    @XmlTransient
+    public List<TieneDistribuidor> getTieneDistribuidorList() {
+        return tieneDistribuidorList;
+    }
+
+    public void setTieneDistribuidorList(List<TieneDistribuidor> tieneDistribuidorList) {
+        this.tieneDistribuidorList = tieneDistribuidorList;
     }
 
     @Override
@@ -133,29 +191,4 @@ public class Producto implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.Producto[ codigo=" + codigo + " ]";
     }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
-
-    public String getSubacategoria() {
-        return subacategoria;
-    }
-
-    public void setSubacategoria(String subacategoria) {
-        this.subacategoria = subacategoria;
-    }
-
-    public String getImagen() {
-        return imagen;
-    }
-
-    public void setImagen(String imagen) {
-        this.imagen = imagen;
-    }
-    
 }

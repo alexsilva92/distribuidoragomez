@@ -40,10 +40,9 @@ import javax.transaction.UserTransaction;
  */
 public class UsuarioJpaController implements Serializable {
 
-    public UsuarioJpaController(UserTransaction utx, EntityManagerFactory emf){
-        this.utx = utx;
+    public UsuarioJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
         this.emf = emf;
-    }
+}
     private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 

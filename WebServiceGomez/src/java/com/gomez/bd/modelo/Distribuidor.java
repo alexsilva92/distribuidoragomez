@@ -1,7 +1,17 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2014 Alejandro Silva <alexsilva792@gmail.com>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.gomez.bd.modelo;
@@ -23,8 +33,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
- * @author Alex
+ * Distribuidor.java
+ * @author Alejandro Silva <alexsilva792@gmail.com>
  */
 @Entity
 @Table(name = "Distribuidor")
@@ -54,9 +64,10 @@ public class Distribuidor implements Serializable {
     private String telefono;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "distribuidor")
     private List<PedidoDistribuidor> pedidoDistribuidorList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "distribuidor1")
+    private List<TieneDistribuidor> tieneDistribuidorList;
 
-    public Distribuidor() {
-    }
+    public Distribuidor(){}
 
     public Distribuidor(String cifNif) {
         this.cifNif = cifNif;
@@ -101,6 +112,15 @@ public class Distribuidor implements Serializable {
         this.pedidoDistribuidorList = pedidoDistribuidorList;
     }
 
+    @XmlTransient
+    public List<TieneDistribuidor> getTieneDistribuidorList() {
+        return tieneDistribuidorList;
+    }
+
+    public void setTieneDistribuidorList(List<TieneDistribuidor> tieneDistribuidorList) {
+        this.tieneDistribuidorList = tieneDistribuidorList;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -125,5 +145,4 @@ public class Distribuidor implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.Distribuidor[ cifNif=" + cifNif + " ]";
     }
-    
 }

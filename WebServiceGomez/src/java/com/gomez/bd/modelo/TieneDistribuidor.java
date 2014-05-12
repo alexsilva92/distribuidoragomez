@@ -28,46 +28,46 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * TienePedidoCliente.java
+ * TieneDistribuidor.java
  * @author Alejandro Silva <alexsilva792@gmail.com>
  */
 @Entity
-@Table(name = "TienePedidoCliente")
+@Table(name = "TieneDistribuidor")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "TienePedidoCliente.findAll", query = "SELECT t FROM TienePedidoCliente t"),
-    @NamedQuery(name = "TienePedidoCliente.findByPedido", query = "SELECT t FROM TienePedidoCliente t WHERE t.tienePedidoClientePK.pedido = :pedido"),
-    @NamedQuery(name = "TienePedidoCliente.findByProducto", query = "SELECT t FROM TienePedidoCliente t WHERE t.tienePedidoClientePK.producto = :producto"),
-    @NamedQuery(name = "TienePedidoCliente.findByCantidad", query = "SELECT t FROM TienePedidoCliente t WHERE t.cantidad = :cantidad")})
-public class TienePedidoCliente implements Serializable {
+    @NamedQuery(name = "TieneDistribuidor.findAll", query = "SELECT t FROM TieneDistribuidor t"),
+    @NamedQuery(name = "TieneDistribuidor.findByDistribuidor", query = "SELECT t FROM TieneDistribuidor t WHERE t.tieneDistribuidorPK.distribuidor = :distribuidor"),
+    @NamedQuery(name = "TieneDistribuidor.findByProducto", query = "SELECT t FROM TieneDistribuidor t WHERE t.tieneDistribuidorPK.producto = :producto"),
+    @NamedQuery(name = "TieneDistribuidor.findByCantidad", query = "SELECT t FROM TieneDistribuidor t WHERE t.cantidad = :cantidad")})
+public class TieneDistribuidor implements Serializable {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
-    protected TienePedidoClientePK tienePedidoClientePK;
+    protected TieneDistribuidorPK tieneDistribuidorPK;
     @Column(name = "cantidad")
     private Integer cantidad;
     @JoinColumn(name = "producto", referencedColumnName = "codigo", insertable = false, updatable = false)
     @ManyToOne(optional = false)
     private Producto producto1;
-    @JoinColumn(name = "pedido", referencedColumnName = "idPedido", insertable = false, updatable = false)
+    @JoinColumn(name = "distribuidor", referencedColumnName = "cifNif", insertable = false, updatable = false)
     @ManyToOne(optional = false)
-    private PedidoCliente pedidoCliente;
+    private Distribuidor distribuidor1;
 
-    public TienePedidoCliente(){}
+    public TieneDistribuidor(){}
 
-    public TienePedidoCliente(TienePedidoClientePK tienePedidoClientePK) {
-        this.tienePedidoClientePK = tienePedidoClientePK;
+    public TieneDistribuidor(TieneDistribuidorPK tieneDistribuidorPK) {
+        this.tieneDistribuidorPK = tieneDistribuidorPK;
     }
 
-    public TienePedidoCliente(int pedido, String producto) {
-        this.tienePedidoClientePK = new TienePedidoClientePK(pedido, producto);
+    public TieneDistribuidor(String distribuidor, String producto) {
+        this.tieneDistribuidorPK = new TieneDistribuidorPK(distribuidor, producto);
     }
 
-    public TienePedidoClientePK getTienePedidoClientePK() {
-        return tienePedidoClientePK;
+    public TieneDistribuidorPK getTieneDistribuidorPK() {
+        return tieneDistribuidorPK;
     }
 
-    public void setTienePedidoClientePK(TienePedidoClientePK tienePedidoClientePK) {
-        this.tienePedidoClientePK = tienePedidoClientePK;
+    public void setTieneDistribuidorPK(TieneDistribuidorPK tieneDistribuidorPK) {
+        this.tieneDistribuidorPK = tieneDistribuidorPK;
     }
 
     public Integer getCantidad() {
@@ -86,29 +86,29 @@ public class TienePedidoCliente implements Serializable {
         this.producto1 = producto1;
     }
 
-    public PedidoCliente getPedidoCliente() {
-        return pedidoCliente;
+    public Distribuidor getDistribuidor1() {
+        return distribuidor1;
     }
 
-    public void setPedidoCliente(PedidoCliente pedidoCliente) {
-        this.pedidoCliente = pedidoCliente;
+    public void setDistribuidor1(Distribuidor distribuidor1) {
+        this.distribuidor1 = distribuidor1;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (tienePedidoClientePK != null ? tienePedidoClientePK.hashCode() : 0);
+        hash += (tieneDistribuidorPK != null ? tieneDistribuidorPK.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TienePedidoCliente)) {
+        if (!(object instanceof TieneDistribuidor)) {
             return false;
         }
-        TienePedidoCliente other = (TienePedidoCliente) object;
-        if ((this.tienePedidoClientePK == null && other.tienePedidoClientePK != null) || (this.tienePedidoClientePK != null && !this.tienePedidoClientePK.equals(other.tienePedidoClientePK))) {
+        TieneDistribuidor other = (TieneDistribuidor) object;
+        if ((this.tieneDistribuidorPK == null && other.tieneDistribuidorPK != null) || (this.tieneDistribuidorPK != null && !this.tieneDistribuidorPK.equals(other.tieneDistribuidorPK))) {
             return false;
         }
         return true;
@@ -116,6 +116,6 @@ public class TienePedidoCliente implements Serializable {
 
     @Override
     public String toString() {
-        return "com.gomez.bd.modelo.TienePedidoCliente[ tienePedidoClientePK=" + tienePedidoClientePK + " ]";
+        return "com.gomez.bd.modelo.TieneDistribuidor[ tieneDistribuidorPK=" + tieneDistribuidorPK + " ]";
     }
 }

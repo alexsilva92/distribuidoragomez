@@ -29,6 +29,7 @@ import javax.persistence.criteria.Root;
 import com.gomez.bd.modelo.PedidoDistribuidor;
 import java.util.ArrayList;
 import java.util.List;
+import com.gomez.bd.modelo.TieneDistribuidor;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
@@ -53,6 +54,9 @@ public class DistribuidorJpaController implements Serializable {
         if (distribuidor.getPedidoDistribuidorList() == null) {
             distribuidor.setPedidoDistribuidorList(new ArrayList<PedidoDistribuidor>());
         }
+        if (distribuidor.getTieneDistribuidorList() == null) {
+            distribuidor.setTieneDistribuidorList(new ArrayList<TieneDistribuidor>());
+        }
         EntityManager em = null;
         try {
             utx.begin();
@@ -63,6 +67,12 @@ public class DistribuidorJpaController implements Serializable {
                 attachedPedidoDistribuidorList.add(pedidoDistribuidorListPedidoDistribuidorToAttach);
             }
             distribuidor.setPedidoDistribuidorList(attachedPedidoDistribuidorList);
+            List<TieneDistribuidor> attachedTieneDistribuidorList = new ArrayList<TieneDistribuidor>();
+            for (TieneDistribuidor tieneDistribuidorListTieneDistribuidorToAttach : distribuidor.getTieneDistribuidorList()) {
+                tieneDistribuidorListTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListTieneDistribuidorToAttach.getClass(), tieneDistribuidorListTieneDistribuidorToAttach.getTieneDistribuidorPK());
+                attachedTieneDistribuidorList.add(tieneDistribuidorListTieneDistribuidorToAttach);
+            }
+            distribuidor.setTieneDistribuidorList(attachedTieneDistribuidorList);
             em.persist(distribuidor);
             for (PedidoDistribuidor pedidoDistribuidorListPedidoDistribuidor : distribuidor.getPedidoDistribuidorList()) {
                 Distribuidor oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor = pedidoDistribuidorListPedidoDistribuidor.getDistribuidor();
@@ -71,6 +81,15 @@ public class DistribuidorJpaController implements Serializable {
                 if (oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor != null) {
                     oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor.getPedidoDistribuidorList().remove(pedidoDistribuidorListPedidoDistribuidor);
                     oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor = em.merge(oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor);
+                }
+            }
+            for (TieneDistribuidor tieneDistribuidorListTieneDistribuidor : distribuidor.getTieneDistribuidorList()) {
+                Distribuidor oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor = tieneDistribuidorListTieneDistribuidor.getDistribuidor1();
+                tieneDistribuidorListTieneDistribuidor.setDistribuidor1(distribuidor);
+                tieneDistribuidorListTieneDistribuidor = em.merge(tieneDistribuidorListTieneDistribuidor);
+                if (oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor != null) {
+                    oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor.getTieneDistribuidorList().remove(tieneDistribuidorListTieneDistribuidor);
+                    oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor = em.merge(oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor);
                 }
             }
             utx.commit();
@@ -99,6 +118,8 @@ public class DistribuidorJpaController implements Serializable {
             Distribuidor persistentDistribuidor = em.find(Distribuidor.class, distribuidor.getCifNif());
             List<PedidoDistribuidor> pedidoDistribuidorListOld = persistentDistribuidor.getPedidoDistribuidorList();
             List<PedidoDistribuidor> pedidoDistribuidorListNew = distribuidor.getPedidoDistribuidorList();
+            List<TieneDistribuidor> tieneDistribuidorListOld = persistentDistribuidor.getTieneDistribuidorList();
+            List<TieneDistribuidor> tieneDistribuidorListNew = distribuidor.getTieneDistribuidorList();
             List<String> illegalOrphanMessages = null;
             for (PedidoDistribuidor pedidoDistribuidorListOldPedidoDistribuidor : pedidoDistribuidorListOld) {
                 if (!pedidoDistribuidorListNew.contains(pedidoDistribuidorListOldPedidoDistribuidor)) {
@@ -106,6 +127,14 @@ public class DistribuidorJpaController implements Serializable {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
                     illegalOrphanMessages.add("You must retain PedidoDistribuidor " + pedidoDistribuidorListOldPedidoDistribuidor + " since its distribuidor field is not nullable.");
+                }
+            }
+            for (TieneDistribuidor tieneDistribuidorListOldTieneDistribuidor : tieneDistribuidorListOld) {
+                if (!tieneDistribuidorListNew.contains(tieneDistribuidorListOldTieneDistribuidor)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain TieneDistribuidor " + tieneDistribuidorListOldTieneDistribuidor + " since its distribuidor1 field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -118,6 +147,13 @@ public class DistribuidorJpaController implements Serializable {
             }
             pedidoDistribuidorListNew = attachedPedidoDistribuidorListNew;
             distribuidor.setPedidoDistribuidorList(pedidoDistribuidorListNew);
+            List<TieneDistribuidor> attachedTieneDistribuidorListNew = new ArrayList<TieneDistribuidor>();
+            for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidorToAttach : tieneDistribuidorListNew) {
+                tieneDistribuidorListNewTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListNewTieneDistribuidorToAttach.getClass(), tieneDistribuidorListNewTieneDistribuidorToAttach.getTieneDistribuidorPK());
+                attachedTieneDistribuidorListNew.add(tieneDistribuidorListNewTieneDistribuidorToAttach);
+            }
+            tieneDistribuidorListNew = attachedTieneDistribuidorListNew;
+            distribuidor.setTieneDistribuidorList(tieneDistribuidorListNew);
             distribuidor = em.merge(distribuidor);
             for (PedidoDistribuidor pedidoDistribuidorListNewPedidoDistribuidor : pedidoDistribuidorListNew) {
                 if (!pedidoDistribuidorListOld.contains(pedidoDistribuidorListNewPedidoDistribuidor)) {
@@ -127,6 +163,17 @@ public class DistribuidorJpaController implements Serializable {
                     if (oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor != null && !oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor.equals(distribuidor)) {
                         oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor.getPedidoDistribuidorList().remove(pedidoDistribuidorListNewPedidoDistribuidor);
                         oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor = em.merge(oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor);
+                    }
+                }
+            }
+            for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidor : tieneDistribuidorListNew) {
+                if (!tieneDistribuidorListOld.contains(tieneDistribuidorListNewTieneDistribuidor)) {
+                    Distribuidor oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor = tieneDistribuidorListNewTieneDistribuidor.getDistribuidor1();
+                    tieneDistribuidorListNewTieneDistribuidor.setDistribuidor1(distribuidor);
+                    tieneDistribuidorListNewTieneDistribuidor = em.merge(tieneDistribuidorListNewTieneDistribuidor);
+                    if (oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor != null && !oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor.equals(distribuidor)) {
+                        oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor.getTieneDistribuidorList().remove(tieneDistribuidorListNewTieneDistribuidor);
+                        oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor = em.merge(oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor);
                     }
                 }
             }
@@ -171,6 +218,13 @@ public class DistribuidorJpaController implements Serializable {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
                 illegalOrphanMessages.add("This Distribuidor (" + distribuidor + ") cannot be destroyed since the PedidoDistribuidor " + pedidoDistribuidorListOrphanCheckPedidoDistribuidor + " in its pedidoDistribuidorList field has a non-nullable distribuidor field.");
+            }
+            List<TieneDistribuidor> tieneDistribuidorListOrphanCheck = distribuidor.getTieneDistribuidorList();
+            for (TieneDistribuidor tieneDistribuidorListOrphanCheckTieneDistribuidor : tieneDistribuidorListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Distribuidor (" + distribuidor + ") cannot be destroyed since the TieneDistribuidor " + tieneDistribuidorListOrphanCheckTieneDistribuidor + " in its tieneDistribuidorList field has a non-nullable distribuidor1 field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
