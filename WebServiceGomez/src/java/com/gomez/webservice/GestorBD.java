@@ -6,8 +6,9 @@
 
 package com.gomez.webservice;
 
-
+import com.gomez.bd.bean.UsuarioBean;
 import com.gomez.bd.controller.DistribuidorJpaController;
+import com.gomez.bd.controller.EmpleadoJpaController;
 import com.gomez.bd.controller.PedidoClienteJpaController;
 import com.gomez.bd.controller.StockJpaController;
 import com.gomez.bd.controller.UsuarioJpaController;
@@ -16,6 +17,8 @@ import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.PedidoCliente;
 import com.gomez.bd.modelo.Usuario;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -38,6 +41,7 @@ public class GestorBD {
     private PedidoClienteJpaController pedidoClienteController;
     private DistribuidorJpaController distribuidorController;
     private StockJpaController stockController;
+    private EmpleadoJpaController empleadoController;
 
     private UsuarioJpaController getUsuarioController(){
         if(usuarioController == null){
@@ -45,6 +49,14 @@ public class GestorBD {
                     em.getEntityManagerFactory());
         }
         return usuarioController;
+    }
+    
+    private EmpleadoJpaController getEmpleadoController(){
+        if(empleadoController == null){
+            empleadoController = new EmpleadoJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return empleadoController;
     }
     
     private PedidoClienteJpaController getPedidoClienteController(){
@@ -74,10 +86,19 @@ public class GestorBD {
     /**
      * Web service operation
      */
-    @WebMethod(operationName = "login")
-    public boolean login(@WebParam(name = "login") String login, 
+    @WebMethod(operationName = "loginCliente")
+    public boolean loginCliente(@WebParam(name = "login") String login, 
     @WebParam(name = "password") String password) {
         return getUsuarioController().login(login, password);
+    }
+    
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "loginEmpleado")
+    public boolean loginEmpleado(@WebParam(name = "login") String login, 
+    @WebParam(name = "password") String password) {
+        return getEmpleadoController().login(login, password);
     }
 
     /**
@@ -158,9 +179,26 @@ public class GestorBD {
     /**
      * Web service operation
      */
+    @WebMethod(operationName = "GetPedidosCliente")
+    public java.util.List<com.gomez.bd.modelo.PedidoCliente> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
+        return getPedidoClienteController().getPedidosPorCliente(cliente);
+    }
+
+    /**
+     * Web service operation
+     */
     @WebMethod(operationName = "addUsuario")
-    public Boolean addUsuario(@WebParam(name = "usuario") final Usuario usuario) {
+    public Boolean addUsuario(@WebParam(name = "usuario") UsuarioBean _usuario) {
         try {
+            Usuario usuario = new Usuario();
+            usuario.setDni(_usuario.getDni());
+            usuario.setNombre(_usuario.getNombre());
+            usuario.setApellidos(_usuario.getApellidos());
+            usuario.setPassword(_usuario.getPassword());
+            usuario.setSalt(_usuario.getSalt());
+            usuario.setRazonSocial(_usuario.getRazonSocial());
+            usuario.setLogin(_usuario.getLogin());
+            
             getUsuarioController().create(usuario);
             return true;
         } catch (RollbackFailureException ex) {
@@ -168,13 +206,5 @@ public class GestorBD {
         } catch (Exception ex) {
             return false;
         }
-    }
-
-    /**
-     * Web service operation
-     */
-    @WebMethod(operationName = "GetPedidosCliente")
-    public java.util.List<com.gomez.bd.modelo.PedidoCliente> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
-        return getPedidoClienteController().getPedidosPorCliente(cliente);
     }
 }

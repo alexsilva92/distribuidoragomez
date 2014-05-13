@@ -29,8 +29,10 @@ import com.gomez.bd.modelo.PedidoDistribuidor;
 import java.util.ArrayList;
 import java.util.List;
 import com.gomez.bd.modelo.PedidoCliente;
+import com.gomez.bd.modelo.Usuario;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.transaction.UserTransaction;
 
 /**
@@ -39,7 +41,7 @@ import javax.transaction.UserTransaction;
  */
 public class EmpleadoJpaController implements Serializable {
 
-    public void EmpleadoJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
+    public EmpleadoJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
         this.emf = emf;
 }
     private UserTransaction utx = null;
@@ -271,6 +273,25 @@ public class EmpleadoJpaController implements Serializable {
             return ((Long) q.getSingleResult()).intValue();
         } finally {
             em.close();
+        }
+    }
+    
+        public boolean login(String login, String password){
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery("SELECT e FROM Empleado e WHERE "
+                + "e.login = :login AND e.password = :password");
+        q.setParameter("login", login);
+        q.setParameter("password", password);
+        
+        try{
+            Empleado empleado = (Empleado) q.getSingleResult();
+            if(empleado != null){
+                return true;
+            }else{
+                return false;
+            }
+        }catch(NoResultException  ex){
+            return false;
         }
     }
 }
