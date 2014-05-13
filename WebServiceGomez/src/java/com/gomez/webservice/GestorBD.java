@@ -6,6 +6,8 @@
 
 package com.gomez.webservice;
 
+import com.gomez.bd.bean.ProductoBean;
+import com.gomez.bd.bean.StockBean;
 import com.gomez.bd.bean.UsuarioBean;
 import com.gomez.bd.controller.DistribuidorJpaController;
 import com.gomez.bd.controller.EmpleadoJpaController;
@@ -16,7 +18,10 @@ import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.PedidoCliente;
+import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.Usuario;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -172,8 +177,25 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "getStocks")
-    public java.util.List<com.gomez.bd.modelo.Stock> getStocks() {
-        return getStockController().findStockEntities();
+    public java.util.List<com.gomez.bd.bean.StockBean> getStocks() {
+        List<StockBean> stocks = new ArrayList<StockBean>();
+        for(Stock stock : getStockController().findStockEntities()){
+            StockBean stockBean = new StockBean();
+            ProductoBean productoBean = new ProductoBean();
+            
+            productoBean.setCodigo(stock.getProducto1().getCodigo());
+            productoBean.setNombre(stock.getProducto1().getNombre());
+            productoBean.setCategoria(stock.getProducto1().getCategoria());
+            productoBean.setSubcategoria(stock.getProducto1().getSubacategoria());
+            productoBean.setImagen(stock.getProducto1().getImagen());
+            productoBean.setPrecio(stock.getProducto1().getPrecio());
+            
+            stockBean.setCantidad(stock.getCantidad());
+            stockBean.setProducto(productoBean);
+            stocks.add(stockBean);
+        }
+        
+        return stocks;
     }
 
     /**
