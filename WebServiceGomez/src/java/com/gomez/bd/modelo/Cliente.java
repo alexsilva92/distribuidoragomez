@@ -17,42 +17,37 @@
 package com.gomez.bd.modelo;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Usuario.java
+ * Cliente.java
  * @author Alejandro Silva <alexsilva792@gmail.com>
  */
 @Entity
-@Table(name = "Usuario")
+@Table(name = "Cliente")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Usuario.findAll", query = "SELECT u FROM Usuario u"),
-    @NamedQuery(name = "Usuario.findByDni", query = "SELECT u FROM Usuario u WHERE u.dni = :dni"),
-    @NamedQuery(name = "Usuario.findByNombre", query = "SELECT u FROM Usuario u WHERE u.nombre = :nombre"),
-    @NamedQuery(name = "Usuario.findByApellidos", query = "SELECT u FROM Usuario u WHERE u.apellidos = :apellidos"),
-    @NamedQuery(name = "Usuario.findByRazonSocial", query = "SELECT u FROM Usuario u WHERE u.razonSocial = :razonSocial"),
-    @NamedQuery(name = "Usuario.findByProvincia", query = "SELECT u FROM Usuario u WHERE u.provincia = :provincia"),
-    @NamedQuery(name = "Usuario.findByPoblacion", query = "SELECT u FROM Usuario u WHERE u.poblacion = :poblacion"),
-    @NamedQuery(name = "Usuario.findByDireccion", query = "SELECT u FROM Usuario u WHERE u.direccion = :direccion"),
-    @NamedQuery(name = "Usuario.findByCp", query = "SELECT u FROM Usuario u WHERE u.cp = :cp"),
-    @NamedQuery(name = "Usuario.findByLogin", query = "SELECT u FROM Usuario u WHERE u.login = :login"),
-    @NamedQuery(name = "Usuario.findByPassword", query = "SELECT u FROM Usuario u WHERE u.password = :password"),
-    @NamedQuery(name = "Usuario.findBySalt", query = "SELECT u FROM Usuario u WHERE u.salt = :salt")})
-public class Usuario implements Serializable {
+    @NamedQuery(name = "Cliente.findAll", query = "SELECT c FROM Cliente c"),
+    @NamedQuery(name = "Cliente.findByDni", query = "SELECT c FROM Cliente c WHERE c.dni = :dni"),
+    @NamedQuery(name = "Cliente.findByNombre", query = "SELECT c FROM Cliente c WHERE c.nombre = :nombre"),
+    @NamedQuery(name = "Cliente.findByApellidos", query = "SELECT c FROM Cliente c WHERE c.apellidos = :apellidos"),
+    @NamedQuery(name = "Cliente.findByRazonSocial", query = "SELECT c FROM Cliente c WHERE c.razonSocial = :razonSocial"),
+    @NamedQuery(name = "Cliente.findByProvincia", query = "SELECT c FROM Cliente c WHERE c.provincia = :provincia"),
+    @NamedQuery(name = "Cliente.findByPoblacion", query = "SELECT c FROM Cliente c WHERE c.poblacion = :poblacion"),
+    @NamedQuery(name = "Cliente.findByDireccion", query = "SELECT c FROM Cliente c WHERE c.direccion = :direccion"),
+    @NamedQuery(name = "Cliente.findByCp", query = "SELECT c FROM Cliente c WHERE c.cp = :cp"),
+    @NamedQuery(name = "Cliente.findByLogin", query = "SELECT c FROM Cliente c WHERE c.login = :login"),
+    @NamedQuery(name = "Cliente.findByPassword", query = "SELECT c FROM Cliente c WHERE c.password = :password")})
+public class Cliente implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -97,28 +92,21 @@ public class Usuario implements Serializable {
     @Size(min = 1, max = 150)
     @Column(name = "password")
     private String password;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 80)
-    @Column(name = "salt")
-    private String salt;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cliente")
-    private List<PedidoCliente> pedidoClienteList;
 
-    public Usuario(){}
+    public Cliente() {
+    }
 
-    public Usuario(String dni) {
+    public Cliente(String dni) {
         this.dni = dni;
     }
 
-    public Usuario(String dni, String nombre, String apellidos, String razonSocial, String login, String password, String salt) {
+    public Cliente(String dni, String nombre, String apellidos, String razonSocial, String login, String password) {
         this.dni = dni;
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.razonSocial = razonSocial;
         this.login = login;
         this.password = password;
-        this.salt = salt;
     }
 
     public String getDni() {
@@ -201,23 +189,6 @@ public class Usuario implements Serializable {
         this.password = password;
     }
 
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
-    }
-
-    @XmlTransient
-    public List<PedidoCliente> getPedidoClienteList() {
-        return pedidoClienteList;
-    }
-
-    public void setPedidoClienteList(List<PedidoCliente> pedidoClienteList) {
-        this.pedidoClienteList = pedidoClienteList;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -228,10 +199,10 @@ public class Usuario implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Usuario)) {
+        if (!(object instanceof Cliente)) {
             return false;
         }
-        Usuario other = (Usuario) object;
+        Cliente other = (Cliente) object;
         if ((this.dni == null && other.dni != null) || (this.dni != null && !this.dni.equals(other.dni))) {
             return false;
         }
@@ -240,6 +211,7 @@ public class Usuario implements Serializable {
 
     @Override
     public String toString() {
-        return "com.gomez.bd.modelo.Usuario[ dni=" + dni + " ]";
+        return "com.gomez.bd.modelo.Cliente[ dni=" + dni + " ]";
     }
+
 }

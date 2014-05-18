@@ -8,22 +8,27 @@ package com.gomez.webservice;
 
 import com.gomez.bd.bean.ProductoBean;
 import com.gomez.bd.bean.StockBean;
-import com.gomez.bd.bean.UsuarioBean;
+import com.gomez.bd.bean.ClienteBean;
+import com.gomez.bd.bean.DistribuidorBean;
+import com.gomez.bd.bean.EmpleadoBean;
+import com.gomez.bd.bean.PedidoClienteBean;
+import com.gomez.bd.controller.ClienteJpaController;
 import com.gomez.bd.controller.DistribuidorJpaController;
 import com.gomez.bd.controller.EmpleadoJpaController;
 import com.gomez.bd.controller.PedidoClienteJpaController;
 import com.gomez.bd.controller.StockJpaController;
-import com.gomez.bd.controller.UsuarioJpaController;
+import com.gomez.bd.controller.TieneDistribuidorJpaController;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
+import com.gomez.bd.modelo.Cliente;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.PedidoCliente;
+import com.gomez.bd.modelo.Producto;
 import com.gomez.bd.modelo.Stock;
-import com.gomez.bd.modelo.Usuario;
+import com.gomez.bd.modelo.TieneDistribuidor;
+import com.gomez.bd.modelo.TienePedidoCliente;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -42,18 +47,19 @@ public class GestorBD {
     @Resource
     private javax.transaction.UserTransaction utx;
 
-    private UsuarioJpaController usuarioController;
+    private ClienteJpaController clienteController;
     private PedidoClienteJpaController pedidoClienteController;
     private DistribuidorJpaController distribuidorController;
     private StockJpaController stockController;
     private EmpleadoJpaController empleadoController;
+    private TieneDistribuidorJpaController tieneDistribuidorController;
 
-    private UsuarioJpaController getUsuarioController(){
-        if(usuarioController == null){
-            usuarioController = new UsuarioJpaController(utx,
+    private ClienteJpaController getClienteController(){
+        if(clienteController == null){
+            clienteController = new ClienteJpaController(utx,
                     em.getEntityManagerFactory());
         }
-        return usuarioController;
+        return clienteController;
     }
     
     private EmpleadoJpaController getEmpleadoController(){
@@ -80,6 +86,14 @@ public class GestorBD {
         return distribuidorController;
     }
     
+    private TieneDistribuidorJpaController getTieneDistribuidorController(){
+        if(tieneDistribuidorController == null){
+            tieneDistribuidorController = new TieneDistribuidorJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return tieneDistribuidorController;
+    }
+    
     private StockJpaController getStockController(){
         if(stockController == null){
             stockController = new StockJpaController(utx,
@@ -94,7 +108,7 @@ public class GestorBD {
     @WebMethod(operationName = "loginCliente")
     public boolean loginCliente(@WebParam(name = "login") String login, 
     @WebParam(name = "password") String password) {
-        return getUsuarioController().login(login, password);
+        return getClienteController().login(login, password);
     }
     
     /**
@@ -110,17 +124,30 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "pedidosPorEmpleado")
-    public java.util.List<com.gomez.bd.modelo.PedidoCliente> 
+    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> 
     pedidosPorEmpleado(@WebParam(name = "empleado") final String empleado) {
-        return getPedidoClienteController().getPedidosPorEmpleado(empleado);
+        List<PedidoClienteBean> pedidosBean = new ArrayList<PedidoClienteBean>();
+        List<PedidoCliente> pedidos = getPedidoClienteController().getPedidosPorEmpleado(empleado);
+        PedidoClienteBean pedidoBean;
+        for(PedidoCliente pedido: pedidos){
+            pedidoBean = getPedidoClienteBean(pedido);
+            pedidosBean.add(pedidoBean);
+        }
+        
+        return pedidosBean;
     }
 
     /**
      * Web service operation
      */
     @WebMethod(operationName = "getPedidoCliente")
-    public PedidoCliente getPedidoCliente(@WebParam(name = "id") final int id) {
-        return getPedidoClienteController().findPedidoCliente(id);
+    public PedidoClienteBean getPedidoCliente(@WebParam(name = "id") final int id) {
+        PedidoCliente pedido = getPedidoClienteController().findPedidoCliente(id);
+        PedidoClienteBean pedidoBean = null;
+        if(pedido != null){
+            pedidoBean = getPedidoClienteBean(pedido);
+        }
+        return pedidoBean;
     }
 
     /**
@@ -143,34 +170,82 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "getCliente")
-    public Usuario getCliente(@WebParam(name = "cliente") 
+    public ClienteBean getCliente(@WebParam(name = "cliente") 
     final String cliente) {
-        return getUsuarioController().findUsuario(cliente);
+        Cliente _cliente = getClienteController().findCliente(cliente);
+        ClienteBean clienteBean = null;
+        if(_cliente != null);{
+            clienteBean.setDni(_cliente.getDni());
+            clienteBean.setNombre(_cliente.getNombre());
+            clienteBean.setApellidos(_cliente.getApellidos());
+            clienteBean.setLogin(_cliente.getLogin());
+            clienteBean.setRazonSocial(_cliente.getRazonSocial());
+        }
+        
+        return clienteBean;
     }
 
     /**
      * Web service operation
      */
     @WebMethod(operationName = "getClientes")
-    public java.util.List<com.gomez.bd.modelo.Usuario> getClientes() {
-        return getUsuarioController().findUsuarioEntities();
+    public java.util.List<com.gomez.bd.bean.ClienteBean> getClientes() {
+        List<Cliente> clientes = getClienteController().findClienteEntities();
+        List<ClienteBean> clientesBean = new ArrayList<>();
+        ClienteBean clienteBean;
+        for(Cliente cliente: clientes){
+            clienteBean = new ClienteBean();
+            
+            clienteBean.setDni(cliente.getDni());
+            clienteBean.setNombre(cliente.getNombre());
+            clienteBean.setApellidos(cliente.getApellidos());
+            clienteBean.setLogin(cliente.getLogin());
+            clienteBean.setRazonSocial(cliente.getRazonSocial());
+            
+            clientesBean.add(clienteBean);
+        }
+        return clientesBean;
     }
 
     /**
      * Web service operation
      */
     @WebMethod(operationName = "getDistribuidor")
-    public Distribuidor getDistribuidor(@WebParam(name = "distribuidor") 
+    public DistribuidorBean getDistribuidor(@WebParam(name = "distribuidor") 
     final String distribuidor) {
-        return getDistribuidorController().findDistribuidor(distribuidor);
+        Distribuidor _distribuidor = getDistribuidorController().findDistribuidor(distribuidor);
+        DistribuidorBean distribuidorBean = null;
+         
+        if(distribuidor != null){
+            distribuidorBean = new DistribuidorBean();
+            distribuidorBean.setCifNif(_distribuidor.getCifNif());
+            distribuidorBean.setRazonSocial(_distribuidor.getRazonSocial());
+            distribuidorBean.setTelefono(_distribuidor.getTelefono());
+        }
+        
+        return distribuidorBean;
     }
 
     /**
      * Web service operation
      */
     @WebMethod(operationName = "getDistribuidores")
-    public java.util.List<com.gomez.bd.modelo.Distribuidor> getDistribuidores(){
-        return getDistribuidorController().findDistribuidorEntities();
+    public java.util.List<com.gomez.bd.bean.DistribuidorBean> getDistribuidores(){
+        List<Distribuidor> distribuidores =
+                getDistribuidorController().findDistribuidorEntities();
+        List<DistribuidorBean> distribuidoresBean = new ArrayList<>();
+        DistribuidorBean distribuidorBean;
+        for(Distribuidor distribuidor: distribuidores){
+            distribuidorBean = new DistribuidorBean();
+            
+            distribuidorBean.setCifNif(distribuidor.getCifNif());
+            distribuidorBean.setRazonSocial(distribuidor.getRazonSocial());
+            distribuidorBean.setTelefono(distribuidor.getTelefono());
+            
+            distribuidoresBean.add(distribuidorBean);
+        }
+        
+        return distribuidoresBean;
     }
 
     /**
@@ -179,19 +254,9 @@ public class GestorBD {
     @WebMethod(operationName = "getStocks")
     public java.util.List<com.gomez.bd.bean.StockBean> getStocks() {
         List<StockBean> stocks = new ArrayList<StockBean>();
+        StockBean stockBean;
         for(Stock stock : getStockController().findStockEntities()){
-            StockBean stockBean = new StockBean();
-            ProductoBean productoBean = new ProductoBean();
-            
-            productoBean.setCodigo(stock.getProducto1().getCodigo());
-            productoBean.setNombre(stock.getProducto1().getNombre());
-            productoBean.setCategoria(stock.getProducto1().getCategoria());
-            productoBean.setSubcategoria(stock.getProducto1().getSubacategoria());
-            productoBean.setImagen(stock.getProducto1().getImagen());
-            productoBean.setPrecio(stock.getProducto1().getPrecio());
-            
-            stockBean.setCantidad(stock.getCantidad());
-            stockBean.setProducto(productoBean);
+            stockBean = getStockBean(stock);
             stocks.add(stockBean);
         }
         
@@ -202,26 +267,33 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "GetPedidosCliente")
-    public java.util.List<com.gomez.bd.modelo.PedidoCliente> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
-        return getPedidoClienteController().getPedidosPorCliente(cliente);
+    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
+        List<PedidoClienteBean> pedidosBean = new ArrayList<PedidoClienteBean>();
+        List<PedidoCliente> pedidos = getPedidoClienteController().getPedidosPorCliente(cliente);
+        PedidoClienteBean pedidoBean;
+        for(PedidoCliente pedido: pedidos){
+            pedidoBean = getPedidoClienteBean(pedido);
+            pedidosBean.add(pedidoBean);
+        }
+        
+        return pedidosBean;
     }
 
     /**
      * Web service operation
      */
-    @WebMethod(operationName = "addUsuario")
-    public Boolean addUsuario(@WebParam(name = "usuario") UsuarioBean _usuario) {
+    @WebMethod(operationName = "addCliente")
+    public Boolean addCliente(@WebParam(name = "usuario") ClienteBean _cliente) {
         try {
-            Usuario usuario = new Usuario();
-            usuario.setDni(_usuario.getDni());
-            usuario.setNombre(_usuario.getNombre());
-            usuario.setApellidos(_usuario.getApellidos());
-            usuario.setPassword(_usuario.getPassword());
-            usuario.setSalt(_usuario.getSalt());
-            usuario.setRazonSocial(_usuario.getRazonSocial());
-            usuario.setLogin(_usuario.getLogin());
+            Cliente cliente = new Cliente();
+            cliente.setDni(_cliente.getDni());
+            cliente.setNombre(_cliente.getNombre());
+            cliente.setApellidos(_cliente.getApellidos());
+            cliente.setPassword(_cliente.getPassword());
+            cliente.setRazonSocial(_cliente.getRazonSocial());
+            cliente.setLogin(_cliente.getLogin());
             
-            getUsuarioController().create(usuario);
+            getClienteController().create(cliente);
             return true;
         } catch (RollbackFailureException ex) {
             return false;
@@ -229,4 +301,115 @@ public class GestorBD {
             return false;
         }
     }
+    
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "GetStocksPorId")
+    public java.util.List<com.gomez.bd.bean.StockBean> GetStocksPorId(@WebParam(name = "ids") java.util.List<String> ids) {
+        List<StockBean> stocks = new ArrayList<>();
+        Stock stock;
+        StockBean stockBean;
+        for(String id: ids){
+            stock = getStockController().findStock(id);
+            stockBean = getStockBean(stock);
+            stocks.add(stockBean);
+        }
+        return stocks;
+    }
+    
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "getProductosDistribuidor")
+    public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {
+        Distribuidor _distribuidor = getDistribuidorController().findDistribuidor(distribuidor);
+        List<TieneDistribuidor> productos = getTieneDistribuidorController().getProductos(_distribuidor);
+        List<ProductoBean> productosBean = new ArrayList<>();
+        
+        ProductoBean productoBean;
+        for(TieneDistribuidor producto: productos){
+            productoBean = new ProductoBean();
+            
+            productoBean.setNombre(producto.getProducto1().getNombre());
+            productoBean.setCodigo(producto.getProducto1().getCodigo());
+            productoBean.setPrecio(producto.getProducto1().getPrecio());
+            productoBean.setMarca(producto.getProducto1().getMarca().getMarcaProducto());
+            productoBean.setCategoria(producto.getProducto1().getMarca().getCategoria());
+            productoBean.setImagen(producto.getProducto1().getImagen());
+            
+            productosBean.add(productoBean);
+        }
+        
+        return productosBean;
+    }
+    
+    private PedidoClienteBean getPedidoClienteBean(PedidoCliente pedido){
+        PedidoClienteBean pedidoBean;
+        ClienteBean clienteBean;
+        EmpleadoBean empleadoBean;
+        StockBean stockBean;
+        ProductoBean productoBean;
+        
+        pedidoBean = new PedidoClienteBean();
+            
+        clienteBean = new ClienteBean();
+        clienteBean.setDni(pedido.getCliente().getDni());
+        clienteBean.setLogin(pedido.getCliente().getLogin());
+        clienteBean.setRazonSocial(pedido.getCliente().getRazonSocial());
+        clienteBean.setNombre(pedido.getCliente().getNombre());
+        clienteBean.setApellidos(pedido.getCliente().getApellidos());
+
+        empleadoBean = new EmpleadoBean();
+        empleadoBean.setDni(pedido.getEmpleado().getDni());
+        empleadoBean.setLogin(pedido.getEmpleado().getLogin());
+        empleadoBean.setNombre(pedido.getEmpleado().getNombre());
+        empleadoBean.setApellidos(pedido.getEmpleado().getApellidos());
+
+        pedidoBean.setCliente(clienteBean);
+        pedidoBean.setEmpleado(empleadoBean);
+        pedidoBean.setFecha(pedido.getFechaLllegada());
+        pedidoBean.setEstado(pedido.getEstado().getEstado());
+
+        List<StockBean> productos = new ArrayList<>();
+        for(TienePedidoCliente stock: pedido.getTienePedidoClienteList()){
+            stockBean = new StockBean();
+
+            productoBean = new ProductoBean();
+            productoBean.setCodigo(stock.getProducto1().getCodigo());
+            productoBean.setNombre(stock.getProducto1().getNombre());
+            productoBean.setMarca(stock.getProducto1().getMarca().getMarcaProducto());
+            productoBean.setCategoria(stock.getProducto1().getMarca().getCategoria());
+            productoBean.setImagen(stock.getProducto1().getImagen());
+            productoBean.setPrecio(stock.getProducto1().getPrecio());
+
+            stockBean.setProducto(productoBean);
+            stockBean.setCantidad(stock.getCantidad());
+
+
+            productos.add(stockBean);
+        }
+
+        pedidoBean.setProductos(productos);
+        
+        return pedidoBean;
+    }
+
+    private StockBean getStockBean(Stock stock){
+        StockBean stockBean = new StockBean();
+        ProductoBean productoBean = new ProductoBean();
+
+        productoBean.setCodigo(stock.getProducto1().getCodigo());
+        productoBean.setNombre(stock.getProducto1().getNombre());
+        productoBean.setCategoria(stock.getProducto1().getMarca().getCategoria());
+        productoBean.setMarca(stock.getProducto1().getMarca().getMarcaProducto());
+        productoBean.setImagen(stock.getProducto1().getImagen());
+        productoBean.setPrecio(stock.getProducto1().getPrecio());
+
+        stockBean.setCantidad(stock.getCantidad());
+        stockBean.setProducto(productoBean);
+        
+        return stockBean;
+    }
+   
 }

@@ -19,6 +19,7 @@ package com.gomez.bd.controller;
 import com.gomez.bd.controller.exceptions.IllegalOrphanException;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
+import com.gomez.bd.modelo.Cliente;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -27,7 +28,6 @@ import javax.persistence.criteria.Root;
 import com.gomez.bd.modelo.EstadoPedido;
 import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.PedidoCliente;
-import com.gomez.bd.modelo.Usuario;
 import com.gomez.bd.modelo.TienePedidoCliente;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +41,10 @@ import javax.transaction.UserTransaction;
  */
 public class PedidoClienteJpaController implements Serializable {
 
-    public PedidoClienteJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
+    public PedidoClienteJpaController(UserTransaction utx, EntityManagerFactory emf) {
+        this.utx = utx;
         this.emf = emf;
-}
+    }
     private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
@@ -69,11 +70,6 @@ public class PedidoClienteJpaController implements Serializable {
                 empleado = em.getReference(empleado.getClass(), empleado.getDni());
                 pedidoCliente.setEmpleado(empleado);
             }
-            Usuario cliente = pedidoCliente.getCliente();
-            if (cliente != null) {
-                cliente = em.getReference(cliente.getClass(), cliente.getDni());
-                pedidoCliente.setCliente(cliente);
-            }
             List<TienePedidoCliente> attachedTienePedidoClienteList = new ArrayList<TienePedidoCliente>();
             for (TienePedidoCliente tienePedidoClienteListTienePedidoClienteToAttach : pedidoCliente.getTienePedidoClienteList()) {
                 tienePedidoClienteListTienePedidoClienteToAttach = em.getReference(tienePedidoClienteListTienePedidoClienteToAttach.getClass(), tienePedidoClienteListTienePedidoClienteToAttach.getTienePedidoClientePK());
@@ -88,10 +84,6 @@ public class PedidoClienteJpaController implements Serializable {
             if (empleado != null) {
                 empleado.getPedidoClienteList().add(pedidoCliente);
                 empleado = em.merge(empleado);
-            }
-            if (cliente != null) {
-                cliente.getPedidoClienteList().add(pedidoCliente);
-                cliente = em.merge(cliente);
             }
             for (TienePedidoCliente tienePedidoClienteListTienePedidoCliente : pedidoCliente.getTienePedidoClienteList()) {
                 PedidoCliente oldPedidoClienteOfTienePedidoClienteListTienePedidoCliente = tienePedidoClienteListTienePedidoCliente.getPedidoCliente();
@@ -127,8 +119,6 @@ public class PedidoClienteJpaController implements Serializable {
             EstadoPedido estadoNew = pedidoCliente.getEstado();
             Empleado empleadoOld = persistentPedidoCliente.getEmpleado();
             Empleado empleadoNew = pedidoCliente.getEmpleado();
-            Usuario clienteOld = persistentPedidoCliente.getCliente();
-            Usuario clienteNew = pedidoCliente.getCliente();
             List<TienePedidoCliente> tienePedidoClienteListOld = persistentPedidoCliente.getTienePedidoClienteList();
             List<TienePedidoCliente> tienePedidoClienteListNew = pedidoCliente.getTienePedidoClienteList();
             List<String> illegalOrphanMessages = null;
@@ -150,10 +140,6 @@ public class PedidoClienteJpaController implements Serializable {
             if (empleadoNew != null) {
                 empleadoNew = em.getReference(empleadoNew.getClass(), empleadoNew.getDni());
                 pedidoCliente.setEmpleado(empleadoNew);
-            }
-            if (clienteNew != null) {
-                clienteNew = em.getReference(clienteNew.getClass(), clienteNew.getDni());
-                pedidoCliente.setCliente(clienteNew);
             }
             List<TienePedidoCliente> attachedTienePedidoClienteListNew = new ArrayList<TienePedidoCliente>();
             for (TienePedidoCliente tienePedidoClienteListNewTienePedidoClienteToAttach : tienePedidoClienteListNew) {
@@ -178,14 +164,6 @@ public class PedidoClienteJpaController implements Serializable {
             if (empleadoNew != null && !empleadoNew.equals(empleadoOld)) {
                 empleadoNew.getPedidoClienteList().add(pedidoCliente);
                 empleadoNew = em.merge(empleadoNew);
-            }
-            if (clienteOld != null && !clienteOld.equals(clienteNew)) {
-                clienteOld.getPedidoClienteList().remove(pedidoCliente);
-                clienteOld = em.merge(clienteOld);
-            }
-            if (clienteNew != null && !clienteNew.equals(clienteOld)) {
-                clienteNew.getPedidoClienteList().add(pedidoCliente);
-                clienteNew = em.merge(clienteNew);
             }
             for (TienePedidoCliente tienePedidoClienteListNewTienePedidoCliente : tienePedidoClienteListNew) {
                 if (!tienePedidoClienteListOld.contains(tienePedidoClienteListNewTienePedidoCliente)) {
@@ -253,11 +231,6 @@ public class PedidoClienteJpaController implements Serializable {
                 empleado.getPedidoClienteList().remove(pedidoCliente);
                 empleado = em.merge(empleado);
             }
-            Usuario cliente = pedidoCliente.getCliente();
-            if (cliente != null) {
-                cliente.getPedidoClienteList().remove(pedidoCliente);
-                cliente = em.merge(cliente);
-            }
             em.remove(pedidoCliente);
             utx.commit();
         } catch (Exception ex) {
@@ -319,8 +292,7 @@ public class PedidoClienteJpaController implements Serializable {
             em.close();
         }
     }
-    
-    
+
     public List<PedidoCliente> getPedidosPorEmpleado(String dni) {
         EntityManager em = getEntityManager();
         Query q = em.createQuery("SELECT p FROM PedidoCliente p WHERE "
@@ -335,7 +307,7 @@ public class PedidoClienteJpaController implements Serializable {
         EntityManager em = getEntityManager();
         Query q = em.createQuery("SELECT p FROM PedidoCliente p WHERE "
                 + "p.cliente = :cliente");
-        Usuario cliente = em.find(Usuario.class, dni);
+        Cliente cliente = em.find(Cliente.class, dni);
         q.setParameter("cliente",cliente);
         
        return q.getResultList();  

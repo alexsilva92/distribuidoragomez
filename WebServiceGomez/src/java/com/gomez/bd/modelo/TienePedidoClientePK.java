@@ -39,7 +39,8 @@ public class TienePedidoClientePK implements Serializable {
     @Column(name = "producto")
     private String producto;
 
-    public TienePedidoClientePK(){}
+    public TienePedidoClientePK() {
+    }
 
     public TienePedidoClientePK(int pedido, String producto) {
         this.pedido = pedido;
@@ -90,4 +91,5 @@ public class TienePedidoClientePK implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.TienePedidoClientePK[ pedido=" + pedido + ", producto=" + producto + " ]";
     }
+
 }

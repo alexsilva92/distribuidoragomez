@@ -16,22 +16,18 @@
 
 package com.gomez.bd.bean;
 
-import java.beans.*;
 import java.io.Serializable;
 
 /**
- *
+ * EmpleadoBean.java
  * @author Alejandro Silva <alexsilva792@gmail.com>
  */
-public class UsuarioBean implements Serializable {
-    
-    private String dni;
-    private String nombre;
-    private String apellidos;
-    private String razonSocial;
-    private String login;
-    private String password;
-    private String salt;
+public class EmpleadoBean implements Serializable {
+    String dni;
+    String nombre;
+    String apellidos;
+    String login;
+    String password;
 
     public String getDni() {
         return dni;
@@ -57,14 +53,6 @@ public class UsuarioBean implements Serializable {
         this.apellidos = apellidos;
     }
 
-    public String getRazonSocial() {
-        return razonSocial;
-    }
-
-    public void setRazonSocial(String razonSocial) {
-        this.razonSocial = razonSocial;
-    }
-
     public String getLogin() {
         return login;
     }
@@ -80,14 +68,4 @@ public class UsuarioBean implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
-    }
-    
-    
 }

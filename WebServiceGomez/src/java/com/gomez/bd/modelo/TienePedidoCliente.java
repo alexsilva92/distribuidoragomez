@@ -52,7 +52,8 @@ public class TienePedidoCliente implements Serializable {
     @ManyToOne(optional = false)
     private PedidoCliente pedidoCliente;
 
-    public TienePedidoCliente(){}
+    public TienePedidoCliente() {
+    }
 
     public TienePedidoCliente(TienePedidoClientePK tienePedidoClientePK) {
         this.tienePedidoClientePK = tienePedidoClientePK;
@@ -118,4 +119,5 @@ public class TienePedidoCliente implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.TienePedidoCliente[ tienePedidoClientePK=" + tienePedidoClientePK + " ]";
     }
+
 }

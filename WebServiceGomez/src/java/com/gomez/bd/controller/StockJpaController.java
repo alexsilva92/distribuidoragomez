@@ -16,21 +16,18 @@
 
 package com.gomez.bd.controller;
 
-import com.gomez.bd.controller.exceptions.IllegalOrphanException;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.PreexistingEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
+import com.gomez.bd.modelo.Stock;
 import java.io.Serializable;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.gomez.bd.modelo.Producto;
-import com.gomez.bd.modelo.Stock;
-import java.util.ArrayList;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
 /**
@@ -39,9 +36,10 @@ import javax.transaction.UserTransaction;
  */
 public class StockJpaController implements Serializable {
 
-    public StockJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
+    public StockJpaController(UserTransaction utx, EntityManagerFactory emf) {
+        this.utx = utx;
         this.emf = emf;
-}
+    }
     private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
@@ -49,35 +47,12 @@ public class StockJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(Stock stock) throws IllegalOrphanException, PreexistingEntityException, RollbackFailureException, Exception {
-        List<String> illegalOrphanMessages = null;
-        Producto producto1OrphanCheck = stock.getProducto1();
-        if (producto1OrphanCheck != null) {
-            Stock oldStockOfProducto1 = producto1OrphanCheck.getStock();
-            if (oldStockOfProducto1 != null) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("The Producto " + producto1OrphanCheck + " already has an item of type Stock whose producto1 column cannot be null. Please make another selection for the producto1 field.");
-            }
-        }
-        if (illegalOrphanMessages != null) {
-            throw new IllegalOrphanException(illegalOrphanMessages);
-        }
+    public void create(Stock stock) throws PreexistingEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
-            Producto producto1 = stock.getProducto1();
-            if (producto1 != null) {
-                producto1 = em.getReference(producto1.getClass(), producto1.getCodigo());
-                stock.setProducto1(producto1);
-            }
             em.persist(stock);
-            if (producto1 != null) {
-                producto1.setStock(stock);
-                producto1 = em.merge(producto1);
-            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -96,40 +71,12 @@ public class StockJpaController implements Serializable {
         }
     }
 
-    public void edit(Stock stock) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Stock stock) throws NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
-            Stock persistentStock = em.find(Stock.class, stock.getProducto());
-            Producto producto1Old = persistentStock.getProducto1();
-            Producto producto1New = stock.getProducto1();
-            List<String> illegalOrphanMessages = null;
-            if (producto1New != null && !producto1New.equals(producto1Old)) {
-                Stock oldStockOfProducto1 = producto1New.getStock();
-                if (oldStockOfProducto1 != null) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("The Producto " + producto1New + " already has an item of type Stock whose producto1 column cannot be null. Please make another selection for the producto1 field.");
-                }
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
-            if (producto1New != null) {
-                producto1New = em.getReference(producto1New.getClass(), producto1New.getCodigo());
-                stock.setProducto1(producto1New);
-            }
             stock = em.merge(stock);
-            if (producto1Old != null && !producto1Old.equals(producto1New)) {
-                producto1Old.setStock(null);
-                producto1Old = em.merge(producto1Old);
-            }
-            if (producto1New != null && !producto1New.equals(producto1Old)) {
-                producto1New.setStock(stock);
-                producto1New = em.merge(producto1New);
-            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -163,11 +110,6 @@ public class StockJpaController implements Serializable {
                 stock.getProducto();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The stock with id " + id + " no longer exists.", enfe);
-            }
-            Producto producto1 = stock.getProducto1();
-            if (producto1 != null) {
-                producto1.setStock(null);
-                producto1 = em.merge(producto1);
             }
             em.remove(stock);
             utx.commit();
@@ -230,4 +172,5 @@ public class StockJpaController implements Serializable {
             em.close();
         }
     }
+
 }

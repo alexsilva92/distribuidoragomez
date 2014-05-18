@@ -55,7 +55,8 @@ public class Stock implements Serializable {
     @OneToOne(optional = false)
     private Producto producto1;
 
-    public Stock(){}
+    public Stock() {
+    }
 
     public Stock(String producto) {
         this.producto = producto;
@@ -109,4 +110,5 @@ public class Stock implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.Stock[ producto=" + producto + " ]";
     }
+
 }

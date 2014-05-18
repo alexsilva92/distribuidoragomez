@@ -37,9 +37,10 @@ import javax.transaction.UserTransaction;
  */
 public class TienePedidoDistribuidorJpaController implements Serializable {
 
-    public void TienePedidoDistribuidorJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
+    public TienePedidoDistribuidorJpaController(UserTransaction utx, EntityManagerFactory emf) {
+        this.utx = utx;
         this.emf = emf;
-}
+    }
     private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
@@ -175,4 +176,5 @@ public class TienePedidoDistribuidorJpaController implements Serializable {
             em.close();
         }
     }
+
 }

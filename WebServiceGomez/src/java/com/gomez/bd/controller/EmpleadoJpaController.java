@@ -29,7 +29,6 @@ import com.gomez.bd.modelo.PedidoDistribuidor;
 import java.util.ArrayList;
 import java.util.List;
 import com.gomez.bd.modelo.PedidoCliente;
-import com.gomez.bd.modelo.Usuario;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
@@ -41,9 +40,10 @@ import javax.transaction.UserTransaction;
  */
 public class EmpleadoJpaController implements Serializable {
 
-    public EmpleadoJpaController(UserTransaction utx, EntityManagerFactory emf){this.utx = utx;
+    public EmpleadoJpaController(UserTransaction utx, EntityManagerFactory emf) {
+        this.utx = utx;
         this.emf = emf;
-}
+    }
     private UserTransaction utx = null;
     private EntityManagerFactory emf = null;
 
@@ -275,8 +275,8 @@ public class EmpleadoJpaController implements Serializable {
             em.close();
         }
     }
-    
-        public boolean login(String login, String password){
+
+    public boolean login(String login, String password){
         EntityManager em = getEntityManager();
         Query q = em.createQuery("SELECT e FROM Empleado e WHERE "
                 + "e.login = :login AND e.password = :password");

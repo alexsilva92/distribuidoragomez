@@ -84,7 +84,8 @@ public class Empleado implements Serializable {
     @OneToMany(mappedBy = "empleado")
     private List<PedidoCliente> pedidoClienteList;
 
-    public Empleado(){}
+    public Empleado() {
+    }
 
     public Empleado(String dni) {
         this.dni = dni;
@@ -189,4 +190,5 @@ public class Empleado implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.Empleado[ dni=" + dni + " ]";
     }
+
 }

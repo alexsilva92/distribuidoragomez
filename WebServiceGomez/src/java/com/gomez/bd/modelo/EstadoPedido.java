@@ -54,7 +54,8 @@ public class EstadoPedido implements Serializable {
     @OneToMany(mappedBy = "estado")
     private List<PedidoCliente> pedidoClienteList;
 
-    public EstadoPedido(){}
+    public EstadoPedido() {
+    }
 
     public EstadoPedido(String estado) {
         this.estado = estado;
@@ -110,4 +111,5 @@ public class EstadoPedido implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.EstadoPedido[ estado=" + estado + " ]";
     }
+
 }

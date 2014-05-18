@@ -67,7 +67,8 @@ public class Distribuidor implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "distribuidor1")
     private List<TieneDistribuidor> tieneDistribuidorList;
 
-    public Distribuidor(){}
+    public Distribuidor() {
+    }
 
     public Distribuidor(String cifNif) {
         this.cifNif = cifNif;
@@ -145,4 +146,5 @@ public class Distribuidor implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.Distribuidor[ cifNif=" + cifNif + " ]";
     }
+
 }

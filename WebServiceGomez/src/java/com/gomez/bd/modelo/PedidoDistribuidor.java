@@ -64,7 +64,8 @@ public class PedidoDistribuidor implements Serializable {
     @ManyToOne(optional = false)
     private Distribuidor distribuidor;
 
-    public PedidoDistribuidor(){}
+    public PedidoDistribuidor() {
+    }
 
     public PedidoDistribuidor(Integer idPedido) {
         this.idPedido = idPedido;
@@ -134,4 +135,5 @@ public class PedidoDistribuidor implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.PedidoDistribuidor[ idPedido=" + idPedido + " ]";
     }
+
 }

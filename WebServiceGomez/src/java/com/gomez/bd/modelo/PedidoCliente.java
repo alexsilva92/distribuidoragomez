@@ -66,11 +66,12 @@ public class PedidoCliente implements Serializable {
     private Empleado empleado;
     @JoinColumn(name = "cliente", referencedColumnName = "dni")
     @ManyToOne(optional = false)
-    private Usuario cliente;
+    private Cliente cliente;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "pedidoCliente")
     private List<TienePedidoCliente> tienePedidoClienteList;
 
-    public PedidoCliente(){}
+    public PedidoCliente() {
+    }
 
     public PedidoCliente(Integer idPedido) {
         this.idPedido = idPedido;
@@ -108,11 +109,11 @@ public class PedidoCliente implements Serializable {
         this.empleado = empleado;
     }
 
-    public Usuario getCliente() {
+    public Cliente getCliente() {
         return cliente;
     }
 
-    public void setCliente(Usuario cliente) {
+    public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
 
@@ -149,4 +150,5 @@ public class PedidoCliente implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.PedidoCliente[ idPedido=" + idPedido + " ]";
     }
+
 }

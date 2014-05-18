@@ -44,7 +44,8 @@ public class TienePedidoDistribuidor implements Serializable {
     @Column(name = "cantidad")
     private Integer cantidad;
 
-    public TienePedidoDistribuidor(){}
+    public TienePedidoDistribuidor() {
+    }
 
     public TienePedidoDistribuidor(TienePedidoDistribuidorPK tienePedidoDistribuidorPK) {
         this.tienePedidoDistribuidorPK = tienePedidoDistribuidorPK;
@@ -94,4 +95,5 @@ public class TienePedidoDistribuidor implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.TienePedidoDistribuidor[ tienePedidoDistribuidorPK=" + tienePedidoDistribuidorPK + " ]";
     }
+
 }

@@ -52,7 +52,8 @@ public class TieneDistribuidor implements Serializable {
     @ManyToOne(optional = false)
     private Distribuidor distribuidor1;
 
-    public TieneDistribuidor(){}
+    public TieneDistribuidor() {
+    }
 
     public TieneDistribuidor(TieneDistribuidorPK tieneDistribuidorPK) {
         this.tieneDistribuidorPK = tieneDistribuidorPK;
@@ -118,4 +119,5 @@ public class TieneDistribuidor implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.TieneDistribuidor[ tieneDistribuidorPK=" + tieneDistribuidorPK + " ]";
     }
+
 }

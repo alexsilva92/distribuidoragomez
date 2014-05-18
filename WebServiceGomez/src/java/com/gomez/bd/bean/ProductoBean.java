@@ -27,7 +27,7 @@ public class ProductoBean implements Serializable{
     private String codigo;
     private String nombre;
     private String categoria;
-    private String subcategoria;
+    private String marca;
     private String imagen;
     private double precio;
 
@@ -55,12 +55,12 @@ public class ProductoBean implements Serializable{
         this.categoria = categoria;
     }
 
-    public String getSubcategoria() {
-        return subcategoria;
+    public String getMarca() {
+        return marca;
     }
 
-    public void setSubcategoria(String subcategoria) {
-        this.subcategoria = subcategoria;
+    public void setMarca(String marca) {
+        this.marca = marca;
     }
 
     public String getImagen() {

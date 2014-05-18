@@ -40,7 +40,8 @@ public class TieneDistribuidorPK implements Serializable {
     @Column(name = "producto")
     private String producto;
 
-    public TieneDistribuidorPK(){}
+    public TieneDistribuidorPK() {
+    }
 
     public TieneDistribuidorPK(String distribuidor, String producto) {
         this.distribuidor = distribuidor;
@@ -91,4 +92,5 @@ public class TieneDistribuidorPK implements Serializable {
     public String toString() {
         return "com.gomez.bd.modelo.TieneDistribuidorPK[ distribuidor=" + distribuidor + ", producto=" + producto + " ]";
     }
+
 }
