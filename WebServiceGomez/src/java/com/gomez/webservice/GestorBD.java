@@ -23,7 +23,6 @@ import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Cliente;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.PedidoCliente;
-import com.gomez.bd.modelo.Producto;
 import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import com.gomez.bd.modelo.TienePedidoCliente;

@@ -44,8 +44,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Empleado.findByNombre", query = "SELECT e FROM Empleado e WHERE e.nombre = :nombre"),
     @NamedQuery(name = "Empleado.findByApellidos", query = "SELECT e FROM Empleado e WHERE e.apellidos = :apellidos"),
     @NamedQuery(name = "Empleado.findByLogin", query = "SELECT e FROM Empleado e WHERE e.login = :login"),
-    @NamedQuery(name = "Empleado.findByPassword", query = "SELECT e FROM Empleado e WHERE e.password = :password"),
-    @NamedQuery(name = "Empleado.findBySalt", query = "SELECT e FROM Empleado e WHERE e.salt = :salt")})
+    @NamedQuery(name = "Empleado.findByPassword", query = "SELECT e FROM Empleado e WHERE e.password = :password")})
 public class Empleado implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -74,11 +73,6 @@ public class Empleado implements Serializable {
     @Size(min = 1, max = 150)
     @Column(name = "password")
     private String password;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 80)
-    @Column(name = "salt")
-    private String salt;
     @OneToMany(mappedBy = "empleado")
     private List<PedidoDistribuidor> pedidoDistribuidorList;
     @OneToMany(mappedBy = "empleado")
@@ -91,13 +85,12 @@ public class Empleado implements Serializable {
         this.dni = dni;
     }
 
-    public Empleado(String dni, String nombre, String apellidos, String login, String password, String salt) {
+    public Empleado(String dni, String nombre, String apellidos, String login, String password) {
         this.dni = dni;
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.login = login;
         this.password = password;
-        this.salt = salt;
     }
 
     public String getDni() {
@@ -138,14 +131,6 @@ public class Empleado implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public void setSalt(String salt) {
-        this.salt = salt;
     }
 
     @XmlTransient

@@ -17,7 +17,9 @@
 package com.gomez.bd.modelo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -25,10 +27,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Producto.java
@@ -63,9 +68,15 @@ public class Producto implements Serializable {
     @Size(max = 100)
     @Column(name = "imagen")
     private String imagen;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "producto1")
+    private List<TienePedidoCliente> tienePedidoClienteList;
     @JoinColumn(name = "marca", referencedColumnName = "marcaProducto")
     @ManyToOne
     private MarcaProducto marca;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "producto1")
+    private Stock stock;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "producto1")
+    private List<TieneDistribuidor> tieneDistribuidorList;
 
     public Producto() {
     }
@@ -112,12 +123,38 @@ public class Producto implements Serializable {
         this.imagen = imagen;
     }
 
+    @XmlTransient
+    public List<TienePedidoCliente> getTienePedidoClienteList() {
+        return tienePedidoClienteList;
+    }
+
+    public void setTienePedidoClienteList(List<TienePedidoCliente> tienePedidoClienteList) {
+        this.tienePedidoClienteList = tienePedidoClienteList;
+    }
+
     public MarcaProducto getMarca() {
         return marca;
     }
 
     public void setMarca(MarcaProducto marca) {
         this.marca = marca;
+    }
+
+    public Stock getStock() {
+        return stock;
+    }
+
+    public void setStock(Stock stock) {
+        this.stock = stock;
+    }
+
+    @XmlTransient
+    public List<TieneDistribuidor> getTieneDistribuidorList() {
+        return tieneDistribuidorList;
+    }
+
+    public void setTieneDistribuidorList(List<TieneDistribuidor> tieneDistribuidorList) {
+        this.tieneDistribuidorList = tieneDistribuidorList;
     }
 
     @Override
