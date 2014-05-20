@@ -7,7 +7,7 @@ import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="EclipseLink-2.5.1.v20130918-rNA", date="2014-05-13T18:56:38")
+@Generated(value="EclipseLink-2.5.1.v20130918-rNA", date="2014-05-19T17:28:39")
 @StaticMetamodel(Empleado.class)
 public class Empleado_ { 
 
@@ -18,6 +18,5 @@ public class Empleado_ {
     public static volatile SingularAttribute<Empleado, String> login;
     public static volatile SingularAttribute<Empleado, String> dni;
     public static volatile SingularAttribute<Empleado, String> password;
-    public static volatile SingularAttribute<Empleado, String> salt;
 
 }

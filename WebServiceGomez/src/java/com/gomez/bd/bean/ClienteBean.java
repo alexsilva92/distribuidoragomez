@@ -16,7 +16,6 @@
 
 package com.gomez.bd.bean;
 
-import java.beans.*;
 import java.io.Serializable;
 
 /**
@@ -31,6 +30,8 @@ public class ClienteBean implements Serializable {
     private String razonSocial;
     private String login;
     private String password;
+    private String cp;
+    private String direccion;
 
     public String getDni() {
         return dni;
@@ -79,5 +80,20 @@ public class ClienteBean implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
+    public String getCp() {
+        return cp;
+    }
+
+    public void setCp(String cp) {
+        this.cp = cp;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
 }

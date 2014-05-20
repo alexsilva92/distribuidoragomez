@@ -174,11 +174,14 @@ public class GestorBD {
         Cliente _cliente = getClienteController().findCliente(cliente);
         ClienteBean clienteBean = null;
         if(_cliente != null);{
+            clienteBean = new ClienteBean();
             clienteBean.setDni(_cliente.getDni());
             clienteBean.setNombre(_cliente.getNombre());
             clienteBean.setApellidos(_cliente.getApellidos());
             clienteBean.setLogin(_cliente.getLogin());
             clienteBean.setRazonSocial(_cliente.getRazonSocial());
+            clienteBean.setCp(_cliente.getCp());
+            clienteBean.setDireccion(_cliente.getDireccion());
         }
         
         return clienteBean;
@@ -200,6 +203,8 @@ public class GestorBD {
             clienteBean.setApellidos(cliente.getApellidos());
             clienteBean.setLogin(cliente.getLogin());
             clienteBean.setRazonSocial(cliente.getRazonSocial());
+            clienteBean.setCp(cliente.getCp());
+            clienteBean.setDireccion(cliente.getDireccion());
             
             clientesBean.add(clienteBean);
         }
@@ -322,8 +327,7 @@ public class GestorBD {
      */
     @WebMethod(operationName = "getProductosDistribuidor")
     public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {
-        Distribuidor _distribuidor = getDistribuidorController().findDistribuidor(distribuidor);
-        List<TieneDistribuidor> productos = getTieneDistribuidorController().getProductos(_distribuidor);
+        List<TieneDistribuidor> productos = getTieneDistribuidorController().getProductos(distribuidor);
         List<ProductoBean> productosBean = new ArrayList<>();
         
         ProductoBean productoBean;
@@ -365,6 +369,7 @@ public class GestorBD {
         empleadoBean.setNombre(pedido.getEmpleado().getNombre());
         empleadoBean.setApellidos(pedido.getEmpleado().getApellidos());
 
+        pedidoBean.setIdPedido(pedido.getIdPedido());
         pedidoBean.setCliente(clienteBean);
         pedidoBean.setEmpleado(empleadoBean);
         pedidoBean.setFecha(pedido.getFechaLllegada());

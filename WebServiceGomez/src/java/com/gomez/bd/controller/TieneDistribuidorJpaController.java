@@ -19,6 +19,7 @@ package com.gomez.bd.controller;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.PreexistingEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
+import com.gomez.bd.modelo.Cliente;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -211,12 +212,13 @@ public class TieneDistribuidorJpaController implements Serializable {
         }
     }
     
-    public List<TieneDistribuidor> getProductos(Distribuidor distribuidor){
-       EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT t FROM TieneDistribuidor t WHERE "
-                + "t.distribuidor = :distribuidor");
-        q.setParameter("distribuidor",distribuidor);
+    public List<TieneDistribuidor> getProductos(String distribuidor){
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery("SELECT p FROM TieneDistribuidor p WHERE "
+                + "p.distribuidor = \"E20304050\"");
+        //Distribuidor _distribuidor = em.find(Distribuidor.class, distribuidor);
+        //q.setParameter("distribuidor",_distribuidor);
         
-       return q.getResultList();   
+       return q.getResultList();     
     }
 }
