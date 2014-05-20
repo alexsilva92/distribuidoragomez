@@ -30,7 +30,7 @@ public class PedidoClienteBean implements Serializable {
     private ClienteBean cliente;
     private EmpleadoBean empleado;
     private String estado;
-    private Date fecha;
+    private Date fechaLlegada;
     private List<StockBean> productos;
 
     public int getIdPedido() {
@@ -66,11 +66,11 @@ public class PedidoClienteBean implements Serializable {
     }
 
     public Date getFechaLlegada() {
-        return fecha;
+        return fechaLlegada;
     }
 
-    public void setFecha(Date fecha) {
-        this.fecha = fecha;
+    public void setFechaLlegada(Date fechaLlegada) {
+        this.fechaLlegada = fechaLlegada;
     }
 
     public List<StockBean> getProductos() {

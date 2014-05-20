@@ -375,7 +375,7 @@ public class GestorBD {
         pedidoBean.setIdPedido(pedido.getIdPedido());
         pedidoBean.setCliente(clienteBean);
         pedidoBean.setEmpleado(empleadoBean);
-        pedidoBean.setFecha(pedido.getFechaLllegada());
+        pedidoBean.setFechaLlegada(pedido.getFechaLllegada());
         pedidoBean.setEstado(pedido.getEstado().getEstado());
 
         List<StockBean> productos = new ArrayList<>();
