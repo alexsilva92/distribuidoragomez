@@ -26,8 +26,11 @@ import com.gomez.bd.modelo.PedidoCliente;
 import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import com.gomez.bd.modelo.TienePedidoCliente;
+import com.gomez.bd.modelo.TienePedidoClientePK;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -398,6 +401,7 @@ public class GestorBD {
         
         return pedidoBean;
     }
+    
 
     private StockBean getStockBean(Stock stock){
         StockBean stockBean = new StockBean();
@@ -414,6 +418,44 @@ public class GestorBD {
         stockBean.setProducto(productoBean);
         
         return stockBean;
+    }
+
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "addPedidoCliente")
+    public Boolean addPedidoCliente(@WebParam(name = "pedidoBean") PedidoClienteBean pedidoBean) {
+        PedidoCliente pedido;
+        Cliente cliente ;
+        TienePedidoCliente tienePedido;
+        
+        pedido = new PedidoCliente();
+        cliente = new Cliente();
+        cliente.setDni(pedidoBean.getCliente().getDni());
+        
+        pedido.setIdPedido(pedidoBean.getIdPedido());
+        pedido.setCliente(cliente);
+        pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
+
+        List<TienePedidoCliente> productos = new ArrayList<>();
+        for(StockBean stock: pedidoBean.getProductos()){
+            tienePedido = new TienePedidoCliente();
+            tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
+            tienePedido.getTienePedidoClientePK().
+                    setProducto(stock.getProducto().getCodigo());
+            tienePedido.setCantidad(stock.getCantidad());
+
+
+            productos.add(tienePedido);
+        }
+
+        pedido.setTienePedidoClienteList(productos);
+        try {
+            getPedidoClienteController().create(pedido);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
     }
    
 }

@@ -65,7 +65,7 @@ public class PedidoClienteBean implements Serializable {
         this.estado = estado;
     }
 
-    public Date getFecha() {
+    public Date getFechaLlegada() {
         return fecha;
     }
 
