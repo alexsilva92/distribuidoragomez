@@ -16,22 +16,18 @@
 
 package com.gomez.bd.controller;
 
-import com.gomez.bd.controller.exceptions.IllegalOrphanException;
-import com.gomez.bd.controller.exceptions.NonexistentEntityException;
-import com.gomez.bd.controller.exceptions.PreexistingEntityException;
-import com.gomez.bd.controller.exceptions.RollbackFailureException;
+import com.gomez.bd.bean.exceptions.NonexistentEntityException;
+import com.gomez.bd.bean.exceptions.PreexistingEntityException;
+import com.gomez.bd.bean.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Distribuidor;
 import java.io.Serializable;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.gomez.bd.modelo.PedidoDistribuidor;
-import java.util.ArrayList;
-import java.util.List;
-import com.gomez.bd.modelo.TieneDistribuidor;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
 /**
@@ -52,47 +48,11 @@ public class DistribuidorJpaController implements Serializable {
     }
 
     public void create(Distribuidor distribuidor) throws PreexistingEntityException, RollbackFailureException, Exception {
-        if (distribuidor.getPedidoDistribuidorList() == null) {
-            distribuidor.setPedidoDistribuidorList(new ArrayList<PedidoDistribuidor>());
-        }
-        if (distribuidor.getTieneDistribuidorList() == null) {
-            distribuidor.setTieneDistribuidorList(new ArrayList<TieneDistribuidor>());
-        }
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
-            List<PedidoDistribuidor> attachedPedidoDistribuidorList = new ArrayList<PedidoDistribuidor>();
-            for (PedidoDistribuidor pedidoDistribuidorListPedidoDistribuidorToAttach : distribuidor.getPedidoDistribuidorList()) {
-                pedidoDistribuidorListPedidoDistribuidorToAttach = em.getReference(pedidoDistribuidorListPedidoDistribuidorToAttach.getClass(), pedidoDistribuidorListPedidoDistribuidorToAttach.getIdPedido());
-                attachedPedidoDistribuidorList.add(pedidoDistribuidorListPedidoDistribuidorToAttach);
-            }
-            distribuidor.setPedidoDistribuidorList(attachedPedidoDistribuidorList);
-            List<TieneDistribuidor> attachedTieneDistribuidorList = new ArrayList<TieneDistribuidor>();
-            for (TieneDistribuidor tieneDistribuidorListTieneDistribuidorToAttach : distribuidor.getTieneDistribuidorList()) {
-                tieneDistribuidorListTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListTieneDistribuidorToAttach.getClass(), tieneDistribuidorListTieneDistribuidorToAttach.getTieneDistribuidorPK());
-                attachedTieneDistribuidorList.add(tieneDistribuidorListTieneDistribuidorToAttach);
-            }
-            distribuidor.setTieneDistribuidorList(attachedTieneDistribuidorList);
             em.persist(distribuidor);
-            for (PedidoDistribuidor pedidoDistribuidorListPedidoDistribuidor : distribuidor.getPedidoDistribuidorList()) {
-                Distribuidor oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor = pedidoDistribuidorListPedidoDistribuidor.getDistribuidor();
-                pedidoDistribuidorListPedidoDistribuidor.setDistribuidor(distribuidor);
-                pedidoDistribuidorListPedidoDistribuidor = em.merge(pedidoDistribuidorListPedidoDistribuidor);
-                if (oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor != null) {
-                    oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor.getPedidoDistribuidorList().remove(pedidoDistribuidorListPedidoDistribuidor);
-                    oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor = em.merge(oldDistribuidorOfPedidoDistribuidorListPedidoDistribuidor);
-                }
-            }
-            for (TieneDistribuidor tieneDistribuidorListTieneDistribuidor : distribuidor.getTieneDistribuidorList()) {
-                Distribuidor oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor = tieneDistribuidorListTieneDistribuidor.getDistribuidor1();
-                tieneDistribuidorListTieneDistribuidor.setDistribuidor1(distribuidor);
-                tieneDistribuidorListTieneDistribuidor = em.merge(tieneDistribuidorListTieneDistribuidor);
-                if (oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor != null) {
-                    oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor.getTieneDistribuidorList().remove(tieneDistribuidorListTieneDistribuidor);
-                    oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor = em.merge(oldDistribuidor1OfTieneDistribuidorListTieneDistribuidor);
-                }
-            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -111,73 +71,12 @@ public class DistribuidorJpaController implements Serializable {
         }
     }
 
-    public void edit(Distribuidor distribuidor) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Distribuidor distribuidor) throws NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
-            Distribuidor persistentDistribuidor = em.find(Distribuidor.class, distribuidor.getCifNif());
-            List<PedidoDistribuidor> pedidoDistribuidorListOld = persistentDistribuidor.getPedidoDistribuidorList();
-            List<PedidoDistribuidor> pedidoDistribuidorListNew = distribuidor.getPedidoDistribuidorList();
-            List<TieneDistribuidor> tieneDistribuidorListOld = persistentDistribuidor.getTieneDistribuidorList();
-            List<TieneDistribuidor> tieneDistribuidorListNew = distribuidor.getTieneDistribuidorList();
-            List<String> illegalOrphanMessages = null;
-            for (PedidoDistribuidor pedidoDistribuidorListOldPedidoDistribuidor : pedidoDistribuidorListOld) {
-                if (!pedidoDistribuidorListNew.contains(pedidoDistribuidorListOldPedidoDistribuidor)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain PedidoDistribuidor " + pedidoDistribuidorListOldPedidoDistribuidor + " since its distribuidor field is not nullable.");
-                }
-            }
-            for (TieneDistribuidor tieneDistribuidorListOldTieneDistribuidor : tieneDistribuidorListOld) {
-                if (!tieneDistribuidorListNew.contains(tieneDistribuidorListOldTieneDistribuidor)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain TieneDistribuidor " + tieneDistribuidorListOldTieneDistribuidor + " since its distribuidor1 field is not nullable.");
-                }
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
-            List<PedidoDistribuidor> attachedPedidoDistribuidorListNew = new ArrayList<PedidoDistribuidor>();
-            for (PedidoDistribuidor pedidoDistribuidorListNewPedidoDistribuidorToAttach : pedidoDistribuidorListNew) {
-                pedidoDistribuidorListNewPedidoDistribuidorToAttach = em.getReference(pedidoDistribuidorListNewPedidoDistribuidorToAttach.getClass(), pedidoDistribuidorListNewPedidoDistribuidorToAttach.getIdPedido());
-                attachedPedidoDistribuidorListNew.add(pedidoDistribuidorListNewPedidoDistribuidorToAttach);
-            }
-            pedidoDistribuidorListNew = attachedPedidoDistribuidorListNew;
-            distribuidor.setPedidoDistribuidorList(pedidoDistribuidorListNew);
-            List<TieneDistribuidor> attachedTieneDistribuidorListNew = new ArrayList<TieneDistribuidor>();
-            for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidorToAttach : tieneDistribuidorListNew) {
-                tieneDistribuidorListNewTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListNewTieneDistribuidorToAttach.getClass(), tieneDistribuidorListNewTieneDistribuidorToAttach.getTieneDistribuidorPK());
-                attachedTieneDistribuidorListNew.add(tieneDistribuidorListNewTieneDistribuidorToAttach);
-            }
-            tieneDistribuidorListNew = attachedTieneDistribuidorListNew;
-            distribuidor.setTieneDistribuidorList(tieneDistribuidorListNew);
             distribuidor = em.merge(distribuidor);
-            for (PedidoDistribuidor pedidoDistribuidorListNewPedidoDistribuidor : pedidoDistribuidorListNew) {
-                if (!pedidoDistribuidorListOld.contains(pedidoDistribuidorListNewPedidoDistribuidor)) {
-                    Distribuidor oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor = pedidoDistribuidorListNewPedidoDistribuidor.getDistribuidor();
-                    pedidoDistribuidorListNewPedidoDistribuidor.setDistribuidor(distribuidor);
-                    pedidoDistribuidorListNewPedidoDistribuidor = em.merge(pedidoDistribuidorListNewPedidoDistribuidor);
-                    if (oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor != null && !oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor.equals(distribuidor)) {
-                        oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor.getPedidoDistribuidorList().remove(pedidoDistribuidorListNewPedidoDistribuidor);
-                        oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor = em.merge(oldDistribuidorOfPedidoDistribuidorListNewPedidoDistribuidor);
-                    }
-                }
-            }
-            for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidor : tieneDistribuidorListNew) {
-                if (!tieneDistribuidorListOld.contains(tieneDistribuidorListNewTieneDistribuidor)) {
-                    Distribuidor oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor = tieneDistribuidorListNewTieneDistribuidor.getDistribuidor1();
-                    tieneDistribuidorListNewTieneDistribuidor.setDistribuidor1(distribuidor);
-                    tieneDistribuidorListNewTieneDistribuidor = em.merge(tieneDistribuidorListNewTieneDistribuidor);
-                    if (oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor != null && !oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor.equals(distribuidor)) {
-                        oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor.getTieneDistribuidorList().remove(tieneDistribuidorListNewTieneDistribuidor);
-                        oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor = em.merge(oldDistribuidor1OfTieneDistribuidorListNewTieneDistribuidor);
-                    }
-                }
-            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -200,7 +99,7 @@ public class DistribuidorJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
@@ -211,24 +110,6 @@ public class DistribuidorJpaController implements Serializable {
                 distribuidor.getCifNif();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The distribuidor with id " + id + " no longer exists.", enfe);
-            }
-            List<String> illegalOrphanMessages = null;
-            List<PedidoDistribuidor> pedidoDistribuidorListOrphanCheck = distribuidor.getPedidoDistribuidorList();
-            for (PedidoDistribuidor pedidoDistribuidorListOrphanCheckPedidoDistribuidor : pedidoDistribuidorListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This Distribuidor (" + distribuidor + ") cannot be destroyed since the PedidoDistribuidor " + pedidoDistribuidorListOrphanCheckPedidoDistribuidor + " in its pedidoDistribuidorList field has a non-nullable distribuidor field.");
-            }
-            List<TieneDistribuidor> tieneDistribuidorListOrphanCheck = distribuidor.getTieneDistribuidorList();
-            for (TieneDistribuidor tieneDistribuidorListOrphanCheckTieneDistribuidor : tieneDistribuidorListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This Distribuidor (" + distribuidor + ") cannot be destroyed since the TieneDistribuidor " + tieneDistribuidorListOrphanCheckTieneDistribuidor + " in its tieneDistribuidorList field has a non-nullable distribuidor1 field.");
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             em.remove(distribuidor);
             utx.commit();

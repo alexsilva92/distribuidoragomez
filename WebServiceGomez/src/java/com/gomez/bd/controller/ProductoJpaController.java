@@ -16,9 +16,10 @@
 
 package com.gomez.bd.controller;
 
-import com.gomez.bd.controller.exceptions.NonexistentEntityException;
-import com.gomez.bd.controller.exceptions.PreexistingEntityException;
-import com.gomez.bd.controller.exceptions.RollbackFailureException;
+import com.gomez.bd.bean.exceptions.IllegalOrphanException;
+import com.gomez.bd.bean.exceptions.NonexistentEntityException;
+import com.gomez.bd.bean.exceptions.PreexistingEntityException;
+import com.gomez.bd.bean.exceptions.RollbackFailureException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -26,7 +27,11 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.gomez.bd.modelo.MarcaProducto;
 import com.gomez.bd.modelo.Producto;
+import com.gomez.bd.modelo.Stock;
+import com.gomez.bd.modelo.TienePedidoCliente;
+import java.util.ArrayList;
 import java.util.List;
+import com.gomez.bd.modelo.TieneDistribuidor;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
@@ -49,6 +54,12 @@ public class ProductoJpaController implements Serializable {
     }
 
     public void create(Producto producto) throws PreexistingEntityException, RollbackFailureException, Exception {
+        if (producto.getTienePedidoClienteList() == null) {
+            producto.setTienePedidoClienteList(new ArrayList<TienePedidoCliente>());
+        }
+        if (producto.getTieneDistribuidorList() == null) {
+            producto.setTieneDistribuidorList(new ArrayList<TieneDistribuidor>());
+        }
         EntityManager em = null;
         try {
             utx.begin();
@@ -58,10 +69,54 @@ public class ProductoJpaController implements Serializable {
                 marca = em.getReference(marca.getClass(), marca.getMarcaProducto());
                 producto.setMarca(marca);
             }
+            Stock stock = producto.getStock();
+            if (stock != null) {
+                stock = em.getReference(stock.getClass(), stock.getProducto());
+                producto.setStock(stock);
+            }
+            List<TienePedidoCliente> attachedTienePedidoClienteList = new ArrayList<TienePedidoCliente>();
+            for (TienePedidoCliente tienePedidoClienteListTienePedidoClienteToAttach : producto.getTienePedidoClienteList()) {
+                tienePedidoClienteListTienePedidoClienteToAttach = em.getReference(tienePedidoClienteListTienePedidoClienteToAttach.getClass(), tienePedidoClienteListTienePedidoClienteToAttach.getTienePedidoClientePK());
+                attachedTienePedidoClienteList.add(tienePedidoClienteListTienePedidoClienteToAttach);
+            }
+            producto.setTienePedidoClienteList(attachedTienePedidoClienteList);
+            List<TieneDistribuidor> attachedTieneDistribuidorList = new ArrayList<TieneDistribuidor>();
+            for (TieneDistribuidor tieneDistribuidorListTieneDistribuidorToAttach : producto.getTieneDistribuidorList()) {
+                tieneDistribuidorListTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListTieneDistribuidorToAttach.getClass(), tieneDistribuidorListTieneDistribuidorToAttach.getTieneDistribuidorPK());
+                attachedTieneDistribuidorList.add(tieneDistribuidorListTieneDistribuidorToAttach);
+            }
+            producto.setTieneDistribuidorList(attachedTieneDistribuidorList);
             em.persist(producto);
             if (marca != null) {
                 marca.getProductoList().add(producto);
                 marca = em.merge(marca);
+            }
+            if (stock != null) {
+                Producto oldProducto1OfStock = stock.getProducto1();
+                if (oldProducto1OfStock != null) {
+                    oldProducto1OfStock.setStock(null);
+                    oldProducto1OfStock = em.merge(oldProducto1OfStock);
+                }
+                stock.setProducto1(producto);
+                stock = em.merge(stock);
+            }
+            for (TienePedidoCliente tienePedidoClienteListTienePedidoCliente : producto.getTienePedidoClienteList()) {
+                Producto oldProducto1OfTienePedidoClienteListTienePedidoCliente = tienePedidoClienteListTienePedidoCliente.getProducto1();
+                tienePedidoClienteListTienePedidoCliente.setProducto1(producto);
+                tienePedidoClienteListTienePedidoCliente = em.merge(tienePedidoClienteListTienePedidoCliente);
+                if (oldProducto1OfTienePedidoClienteListTienePedidoCliente != null) {
+                    oldProducto1OfTienePedidoClienteListTienePedidoCliente.getTienePedidoClienteList().remove(tienePedidoClienteListTienePedidoCliente);
+                    oldProducto1OfTienePedidoClienteListTienePedidoCliente = em.merge(oldProducto1OfTienePedidoClienteListTienePedidoCliente);
+                }
+            }
+            for (TieneDistribuidor tieneDistribuidorListTieneDistribuidor : producto.getTieneDistribuidorList()) {
+                Producto oldProducto1OfTieneDistribuidorListTieneDistribuidor = tieneDistribuidorListTieneDistribuidor.getProducto1();
+                tieneDistribuidorListTieneDistribuidor.setProducto1(producto);
+                tieneDistribuidorListTieneDistribuidor = em.merge(tieneDistribuidorListTieneDistribuidor);
+                if (oldProducto1OfTieneDistribuidorListTieneDistribuidor != null) {
+                    oldProducto1OfTieneDistribuidorListTieneDistribuidor.getTieneDistribuidorList().remove(tieneDistribuidorListTieneDistribuidor);
+                    oldProducto1OfTieneDistribuidorListTieneDistribuidor = em.merge(oldProducto1OfTieneDistribuidorListTieneDistribuidor);
+                }
             }
             utx.commit();
         } catch (Exception ex) {
@@ -81,7 +136,7 @@ public class ProductoJpaController implements Serializable {
         }
     }
 
-    public void edit(Producto producto) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Producto producto) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
@@ -89,10 +144,60 @@ public class ProductoJpaController implements Serializable {
             Producto persistentProducto = em.find(Producto.class, producto.getCodigo());
             MarcaProducto marcaOld = persistentProducto.getMarca();
             MarcaProducto marcaNew = producto.getMarca();
+            Stock stockOld = persistentProducto.getStock();
+            Stock stockNew = producto.getStock();
+            List<TienePedidoCliente> tienePedidoClienteListOld = persistentProducto.getTienePedidoClienteList();
+            List<TienePedidoCliente> tienePedidoClienteListNew = producto.getTienePedidoClienteList();
+            List<TieneDistribuidor> tieneDistribuidorListOld = persistentProducto.getTieneDistribuidorList();
+            List<TieneDistribuidor> tieneDistribuidorListNew = producto.getTieneDistribuidorList();
+            List<String> illegalOrphanMessages = null;
+            if (stockOld != null && !stockOld.equals(stockNew)) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("You must retain Stock " + stockOld + " since its producto1 field is not nullable.");
+            }
+            for (TienePedidoCliente tienePedidoClienteListOldTienePedidoCliente : tienePedidoClienteListOld) {
+                if (!tienePedidoClienteListNew.contains(tienePedidoClienteListOldTienePedidoCliente)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain TienePedidoCliente " + tienePedidoClienteListOldTienePedidoCliente + " since its producto1 field is not nullable.");
+                }
+            }
+            for (TieneDistribuidor tieneDistribuidorListOldTieneDistribuidor : tieneDistribuidorListOld) {
+                if (!tieneDistribuidorListNew.contains(tieneDistribuidorListOldTieneDistribuidor)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain TieneDistribuidor " + tieneDistribuidorListOldTieneDistribuidor + " since its producto1 field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
             if (marcaNew != null) {
                 marcaNew = em.getReference(marcaNew.getClass(), marcaNew.getMarcaProducto());
                 producto.setMarca(marcaNew);
             }
+            if (stockNew != null) {
+                stockNew = em.getReference(stockNew.getClass(), stockNew.getProducto());
+                producto.setStock(stockNew);
+            }
+            List<TienePedidoCliente> attachedTienePedidoClienteListNew = new ArrayList<TienePedidoCliente>();
+            for (TienePedidoCliente tienePedidoClienteListNewTienePedidoClienteToAttach : tienePedidoClienteListNew) {
+                tienePedidoClienteListNewTienePedidoClienteToAttach = em.getReference(tienePedidoClienteListNewTienePedidoClienteToAttach.getClass(), tienePedidoClienteListNewTienePedidoClienteToAttach.getTienePedidoClientePK());
+                attachedTienePedidoClienteListNew.add(tienePedidoClienteListNewTienePedidoClienteToAttach);
+            }
+            tienePedidoClienteListNew = attachedTienePedidoClienteListNew;
+            producto.setTienePedidoClienteList(tienePedidoClienteListNew);
+            List<TieneDistribuidor> attachedTieneDistribuidorListNew = new ArrayList<TieneDistribuidor>();
+            for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidorToAttach : tieneDistribuidorListNew) {
+                tieneDistribuidorListNewTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListNewTieneDistribuidorToAttach.getClass(), tieneDistribuidorListNewTieneDistribuidorToAttach.getTieneDistribuidorPK());
+                attachedTieneDistribuidorListNew.add(tieneDistribuidorListNewTieneDistribuidorToAttach);
+            }
+            tieneDistribuidorListNew = attachedTieneDistribuidorListNew;
+            producto.setTieneDistribuidorList(tieneDistribuidorListNew);
             producto = em.merge(producto);
             if (marcaOld != null && !marcaOld.equals(marcaNew)) {
                 marcaOld.getProductoList().remove(producto);
@@ -101,6 +206,37 @@ public class ProductoJpaController implements Serializable {
             if (marcaNew != null && !marcaNew.equals(marcaOld)) {
                 marcaNew.getProductoList().add(producto);
                 marcaNew = em.merge(marcaNew);
+            }
+            if (stockNew != null && !stockNew.equals(stockOld)) {
+                Producto oldProducto1OfStock = stockNew.getProducto1();
+                if (oldProducto1OfStock != null) {
+                    oldProducto1OfStock.setStock(null);
+                    oldProducto1OfStock = em.merge(oldProducto1OfStock);
+                }
+                stockNew.setProducto1(producto);
+                stockNew = em.merge(stockNew);
+            }
+            for (TienePedidoCliente tienePedidoClienteListNewTienePedidoCliente : tienePedidoClienteListNew) {
+                if (!tienePedidoClienteListOld.contains(tienePedidoClienteListNewTienePedidoCliente)) {
+                    Producto oldProducto1OfTienePedidoClienteListNewTienePedidoCliente = tienePedidoClienteListNewTienePedidoCliente.getProducto1();
+                    tienePedidoClienteListNewTienePedidoCliente.setProducto1(producto);
+                    tienePedidoClienteListNewTienePedidoCliente = em.merge(tienePedidoClienteListNewTienePedidoCliente);
+                    if (oldProducto1OfTienePedidoClienteListNewTienePedidoCliente != null && !oldProducto1OfTienePedidoClienteListNewTienePedidoCliente.equals(producto)) {
+                        oldProducto1OfTienePedidoClienteListNewTienePedidoCliente.getTienePedidoClienteList().remove(tienePedidoClienteListNewTienePedidoCliente);
+                        oldProducto1OfTienePedidoClienteListNewTienePedidoCliente = em.merge(oldProducto1OfTienePedidoClienteListNewTienePedidoCliente);
+                    }
+                }
+            }
+            for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidor : tieneDistribuidorListNew) {
+                if (!tieneDistribuidorListOld.contains(tieneDistribuidorListNewTieneDistribuidor)) {
+                    Producto oldProducto1OfTieneDistribuidorListNewTieneDistribuidor = tieneDistribuidorListNewTieneDistribuidor.getProducto1();
+                    tieneDistribuidorListNewTieneDistribuidor.setProducto1(producto);
+                    tieneDistribuidorListNewTieneDistribuidor = em.merge(tieneDistribuidorListNewTieneDistribuidor);
+                    if (oldProducto1OfTieneDistribuidorListNewTieneDistribuidor != null && !oldProducto1OfTieneDistribuidorListNewTieneDistribuidor.equals(producto)) {
+                        oldProducto1OfTieneDistribuidorListNewTieneDistribuidor.getTieneDistribuidorList().remove(tieneDistribuidorListNewTieneDistribuidor);
+                        oldProducto1OfTieneDistribuidorListNewTieneDistribuidor = em.merge(oldProducto1OfTieneDistribuidorListNewTieneDistribuidor);
+                    }
+                }
             }
             utx.commit();
         } catch (Exception ex) {
@@ -124,7 +260,7 @@ public class ProductoJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
@@ -135,6 +271,31 @@ public class ProductoJpaController implements Serializable {
                 producto.getCodigo();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The producto with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            Stock stockOrphanCheck = producto.getStock();
+            if (stockOrphanCheck != null) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Producto (" + producto + ") cannot be destroyed since the Stock " + stockOrphanCheck + " in its stock field has a non-nullable producto1 field.");
+            }
+            List<TienePedidoCliente> tienePedidoClienteListOrphanCheck = producto.getTienePedidoClienteList();
+            for (TienePedidoCliente tienePedidoClienteListOrphanCheckTienePedidoCliente : tienePedidoClienteListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Producto (" + producto + ") cannot be destroyed since the TienePedidoCliente " + tienePedidoClienteListOrphanCheckTienePedidoCliente + " in its tienePedidoClienteList field has a non-nullable producto1 field.");
+            }
+            List<TieneDistribuidor> tieneDistribuidorListOrphanCheck = producto.getTieneDistribuidorList();
+            for (TieneDistribuidor tieneDistribuidorListOrphanCheckTieneDistribuidor : tieneDistribuidorListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Producto (" + producto + ") cannot be destroyed since the TieneDistribuidor " + tieneDistribuidorListOrphanCheckTieneDistribuidor + " in its tieneDistribuidorList field has a non-nullable producto1 field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             MarcaProducto marca = producto.getMarca();
             if (marca != null) {

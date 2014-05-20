@@ -16,16 +16,15 @@
 
 package com.gomez.bd.controller;
 
-import com.gomez.bd.controller.exceptions.NonexistentEntityException;
-import com.gomez.bd.controller.exceptions.PreexistingEntityException;
-import com.gomez.bd.controller.exceptions.RollbackFailureException;
-import com.gomez.bd.modelo.Cliente;
+import com.gomez.bd.bean.exceptions.NonexistentEntityException;
+import com.gomez.bd.bean.exceptions.PreexistingEntityException;
+import com.gomez.bd.bean.exceptions.RollbackFailureException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.gomez.bd.modelo.Distribuidor;
+import com.gomez.bd.modelo.Producto;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import com.gomez.bd.modelo.TieneDistribuidorPK;
 import java.util.List;
@@ -60,15 +59,15 @@ public class TieneDistribuidorJpaController implements Serializable {
         try {
             utx.begin();
             em = getEntityManager();
-            Distribuidor distribuidor1 = tieneDistribuidor.getDistribuidor1();
-            if (distribuidor1 != null) {
-                distribuidor1 = em.getReference(distribuidor1.getClass(), distribuidor1.getCifNif());
-                tieneDistribuidor.setDistribuidor1(distribuidor1);
+            Producto producto1 = tieneDistribuidor.getProducto1();
+            if (producto1 != null) {
+                producto1 = em.getReference(producto1.getClass(), producto1.getCodigo());
+                tieneDistribuidor.setProducto1(producto1);
             }
             em.persist(tieneDistribuidor);
-            if (distribuidor1 != null) {
-                distribuidor1.getTieneDistribuidorList().add(tieneDistribuidor);
-                distribuidor1 = em.merge(distribuidor1);
+            if (producto1 != null) {
+                producto1.getTieneDistribuidorList().add(tieneDistribuidor);
+                producto1 = em.merge(producto1);
             }
             utx.commit();
         } catch (Exception ex) {
@@ -96,20 +95,20 @@ public class TieneDistribuidorJpaController implements Serializable {
             utx.begin();
             em = getEntityManager();
             TieneDistribuidor persistentTieneDistribuidor = em.find(TieneDistribuidor.class, tieneDistribuidor.getTieneDistribuidorPK());
-            Distribuidor distribuidor1Old = persistentTieneDistribuidor.getDistribuidor1();
-            Distribuidor distribuidor1New = tieneDistribuidor.getDistribuidor1();
-            if (distribuidor1New != null) {
-                distribuidor1New = em.getReference(distribuidor1New.getClass(), distribuidor1New.getCifNif());
-                tieneDistribuidor.setDistribuidor1(distribuidor1New);
+            Producto producto1Old = persistentTieneDistribuidor.getProducto1();
+            Producto producto1New = tieneDistribuidor.getProducto1();
+            if (producto1New != null) {
+                producto1New = em.getReference(producto1New.getClass(), producto1New.getCodigo());
+                tieneDistribuidor.setProducto1(producto1New);
             }
             tieneDistribuidor = em.merge(tieneDistribuidor);
-            if (distribuidor1Old != null && !distribuidor1Old.equals(distribuidor1New)) {
-                distribuidor1Old.getTieneDistribuidorList().remove(tieneDistribuidor);
-                distribuidor1Old = em.merge(distribuidor1Old);
+            if (producto1Old != null && !producto1Old.equals(producto1New)) {
+                producto1Old.getTieneDistribuidorList().remove(tieneDistribuidor);
+                producto1Old = em.merge(producto1Old);
             }
-            if (distribuidor1New != null && !distribuidor1New.equals(distribuidor1Old)) {
-                distribuidor1New.getTieneDistribuidorList().add(tieneDistribuidor);
-                distribuidor1New = em.merge(distribuidor1New);
+            if (producto1New != null && !producto1New.equals(producto1Old)) {
+                producto1New.getTieneDistribuidorList().add(tieneDistribuidor);
+                producto1New = em.merge(producto1New);
             }
             utx.commit();
         } catch (Exception ex) {
@@ -145,10 +144,10 @@ public class TieneDistribuidorJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The tieneDistribuidor with id " + id + " no longer exists.", enfe);
             }
-            Distribuidor distribuidor1 = tieneDistribuidor.getDistribuidor1();
-            if (distribuidor1 != null) {
-                distribuidor1.getTieneDistribuidorList().remove(tieneDistribuidor);
-                distribuidor1 = em.merge(distribuidor1);
+            Producto producto1 = tieneDistribuidor.getProducto1();
+            if (producto1 != null) {
+                producto1.getTieneDistribuidorList().remove(tieneDistribuidor);
+                producto1 = em.merge(producto1);
             }
             em.remove(tieneDistribuidor);
             utx.commit();
@@ -211,14 +210,5 @@ public class TieneDistribuidorJpaController implements Serializable {
             em.close();
         }
     }
-    
-    public List<TieneDistribuidor> getProductos(String distribuidor){
-        EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT p FROM TieneDistribuidor p WHERE "
-                + "p.distribuidor = \"E20304050\"");
-        //Distribuidor _distribuidor = em.find(Distribuidor.class, distribuidor);
-        //q.setParameter("distribuidor",_distribuidor);
-        
-       return q.getResultList();     
-    }
+
 }

@@ -328,8 +328,8 @@ public class GestorBD {
     /**
      * Web service operation
      */
-    @WebMethod(operationName = "getProductosDistribuidor")
-    public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {
+    //@WebMethod(operationName = "getProductosDistribuidor")
+    /*public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {
         List<TieneDistribuidor> productos = getTieneDistribuidorController().getProductos(distribuidor);
         List<ProductoBean> productosBean = new ArrayList<>();
         
@@ -348,7 +348,7 @@ public class GestorBD {
         }
         
         return productosBean;
-    }
+    }*/
     
     private PedidoClienteBean getPedidoClienteBean(PedidoCliente pedido){
         PedidoClienteBean pedidoBean;
@@ -433,7 +433,6 @@ public class GestorBD {
         cliente = new Cliente();
         cliente.setDni(pedidoBean.getCliente().getDni());
         
-        pedido.setIdPedido(pedidoBean.getIdPedido());
         pedido.setCliente(cliente);
         pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
 
