@@ -434,9 +434,9 @@ public class GestorBD {
         cliente.setDni(pedidoBean.getCliente().getDni());
         
         pedido.setCliente(cliente);
-        pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
+        //pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
 
-        List<TienePedidoCliente> productos = new ArrayList<>();
+        /*List<TienePedidoCliente> productos = new ArrayList<>();
         for(StockBean stock: pedidoBean.getProductos()){
             tienePedido = new TienePedidoCliente();
             tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
@@ -446,9 +446,9 @@ public class GestorBD {
 
 
             productos.add(tienePedido);
-        }
+        }*/
 
-        pedido.setTienePedidoClienteList(productos);
+        //pedido.setTienePedidoClienteList(productos);
         try {
             getPedidoClienteController().create(pedido);
             return true;
