@@ -16,10 +16,10 @@
 
 package com.gomez.bd.controller;
 
-import com.gomez.bd.bean.exceptions.IllegalOrphanException;
-import com.gomez.bd.bean.exceptions.NonexistentEntityException;
-import com.gomez.bd.bean.exceptions.PreexistingEntityException;
-import com.gomez.bd.bean.exceptions.RollbackFailureException;
+import com.gomez.bd.controller.exceptions.IllegalOrphanException;
+import com.gomez.bd.controller.exceptions.NonexistentEntityException;
+import com.gomez.bd.controller.exceptions.PreexistingEntityException;
+import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;

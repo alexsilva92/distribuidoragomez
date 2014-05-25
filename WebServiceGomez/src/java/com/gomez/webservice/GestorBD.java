@@ -54,6 +54,7 @@ public class GestorBD {
     private DistribuidorJpaController distribuidorController;
     private StockJpaController stockController;
     private EmpleadoJpaController empleadoController;
+    private QueryJpaController queryController;
     private TieneDistribuidorJpaController tieneDistribuidorController;
 
     private ClienteJpaController getClienteController(){
@@ -70,6 +71,14 @@ public class GestorBD {
                     em.getEntityManagerFactory());
         }
         return empleadoController;
+    }
+    
+    private QueryJpaController getQueryController(){
+        if(queryController == null){
+            queryController = new QueryJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return queryController;
     }
     
     private PedidoClienteJpaController getPedidoClienteController(){
@@ -110,7 +119,7 @@ public class GestorBD {
     @WebMethod(operationName = "loginCliente")
     public boolean loginCliente(@WebParam(name = "login") String login, 
     @WebParam(name = "password") String password) {
-        return getClienteController().login(login, password);
+        return getQueryController().loginCliente(login, password);
     }
     
     /**
@@ -119,7 +128,7 @@ public class GestorBD {
     @WebMethod(operationName = "loginEmpleado")
     public boolean loginEmpleado(@WebParam(name = "login") String login, 
     @WebParam(name = "password") String password) {
-        return getEmpleadoController().login(login, password);
+        return getQueryController().loginEmpleado(login, password);
     }
 
     /**
@@ -129,7 +138,7 @@ public class GestorBD {
     public java.util.List<com.gomez.bd.bean.PedidoClienteBean> 
     pedidosPorEmpleado(@WebParam(name = "empleado") final String empleado) {
         List<PedidoClienteBean> pedidosBean = new ArrayList<PedidoClienteBean>();
-        List<PedidoCliente> pedidos = getPedidoClienteController().getPedidosPorEmpleado(empleado);
+        List<PedidoCliente> pedidos = getQueryController().getPedidosPorEmpleado(empleado);
         PedidoClienteBean pedidoBean;
         for(PedidoCliente pedido: pedidos){
             pedidoBean = getPedidoClienteBean(pedido);
@@ -276,7 +285,7 @@ public class GestorBD {
     @WebMethod(operationName = "GetPedidosCliente")
     public java.util.List<com.gomez.bd.bean.PedidoClienteBean> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
         List<PedidoClienteBean> pedidosBean = new ArrayList<PedidoClienteBean>();
-        List<PedidoCliente> pedidos = getPedidoClienteController().getPedidosPorCliente(cliente);
+        List<PedidoCliente> pedidos = getQueryController().getPedidosPorCliente(cliente);
         PedidoClienteBean pedidoBean;
         for(PedidoCliente pedido: pedidos){
             pedidoBean = getPedidoClienteBean(pedido);
@@ -328,27 +337,29 @@ public class GestorBD {
     /**
      * Web service operation
      */
-    //@WebMethod(operationName = "getProductosDistribuidor")
-    /*public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {
-        List<TieneDistribuidor> productos = getTieneDistribuidorController().getProductos(distribuidor);
+    @WebMethod(operationName = "getProductosDistribuidor")
+    public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {        
         List<ProductoBean> productosBean = new ArrayList<>();
-        
+
+        List<TieneDistribuidor> productos = getQueryController().getProductosDistribuidor(distribuidor);
+
         ProductoBean productoBean;
         for(TieneDistribuidor producto: productos){
             productoBean = new ProductoBean();
-            
+
             productoBean.setNombre(producto.getProducto1().getNombre());
             productoBean.setCodigo(producto.getProducto1().getCodigo());
             productoBean.setPrecio(producto.getProducto1().getPrecio());
             productoBean.setMarca(producto.getProducto1().getMarca().getMarcaProducto());
             productoBean.setCategoria(producto.getProducto1().getMarca().getCategoria());
             productoBean.setImagen(producto.getProducto1().getImagen());
-            
+
             productosBean.add(productoBean);
+
         }
         
         return productosBean;
-    }*/
+    }
     
     private PedidoClienteBean getPedidoClienteBean(PedidoCliente pedido){
         PedidoClienteBean pedidoBean;
@@ -436,19 +447,21 @@ public class GestorBD {
         pedido.setCliente(cliente);
         //pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
 
-        /*List<TienePedidoCliente> productos = new ArrayList<>();
+        List<TienePedidoCliente> productos = new ArrayList<>();
         for(StockBean stock: pedidoBean.getProductos()){
             tienePedido = new TienePedidoCliente();
             tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
             tienePedido.getTienePedidoClientePK().
                     setProducto(stock.getProducto().getCodigo());
+            tienePedido.getTienePedidoClientePK().setPedido(
+                    pedido.getIdPedido());
             tienePedido.setCantidad(stock.getCantidad());
 
 
             productos.add(tienePedido);
-        }*/
+        }
 
-        //pedido.setTienePedidoClienteList(productos);
+        pedido.setTienePedidoClienteList(productos);
         try {
             getPedidoClienteController().create(pedido);
             return true;

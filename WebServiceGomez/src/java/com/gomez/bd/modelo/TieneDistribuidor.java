@@ -48,9 +48,6 @@ public class TieneDistribuidor implements Serializable {
     @JoinColumn(name = "producto", referencedColumnName = "codigo", insertable = false, updatable = false)
     @ManyToOne(optional = false)
     private Producto producto1;
-    @JoinColumn(name = "distribuidor", referencedColumnName = "cifNif", insertable = false, updatable = false)
-    @ManyToOne(optional = false)
-    private Distribuidor distribuidor1;
 
     public TieneDistribuidor() {
     }
@@ -85,14 +82,6 @@ public class TieneDistribuidor implements Serializable {
 
     public void setProducto1(Producto producto1) {
         this.producto1 = producto1;
-    }
-
-    public Distribuidor getDistribuidor1() {
-        return distribuidor1;
-    }
-
-    public void setDistribuidor1(Distribuidor distribuidor1) {
-        this.distribuidor1 = distribuidor1;
     }
 
     @Override

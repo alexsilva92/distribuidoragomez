@@ -31,7 +31,6 @@ import java.util.List;
 import com.gomez.bd.modelo.PedidoCliente;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.NoResultException;
 import javax.transaction.UserTransaction;
 
 /**
@@ -276,22 +275,4 @@ public class EmpleadoJpaController implements Serializable {
         }
     }
 
-    public boolean login(String login, String password){
-        EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT e FROM Empleado e WHERE "
-                + "e.login = :login AND e.password = :password");
-        q.setParameter("login", login);
-        q.setParameter("password", password);
-        
-        try{
-            Empleado empleado = (Empleado) q.getSingleResult();
-            if(empleado != null){
-                return true;
-            }else{
-                return false;
-            }
-        }catch(NoResultException  ex){
-            return false;
-        }
-    }
 }

@@ -16,9 +16,9 @@
 
 package com.gomez.bd.controller;
 
-import com.gomez.bd.bean.exceptions.NonexistentEntityException;
-import com.gomez.bd.bean.exceptions.PreexistingEntityException;
-import com.gomez.bd.bean.exceptions.RollbackFailureException;
+import com.gomez.bd.controller.exceptions.NonexistentEntityException;
+import com.gomez.bd.controller.exceptions.PreexistingEntityException;
+import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.MarcaProducto;
 import java.io.Serializable;
 import javax.persistence.Query;

@@ -16,19 +16,21 @@
 
 package com.gomez.bd.controller;
 
+import com.gomez.bd.controller.exceptions.IllegalOrphanException;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.PreexistingEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Cliente;
 import java.io.Serializable;
+import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import com.gomez.bd.modelo.PedidoCliente;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.NoResultException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import javax.transaction.UserTransaction;
 
 /**
@@ -49,11 +51,29 @@ public class ClienteJpaController implements Serializable {
     }
 
     public void create(Cliente cliente) throws PreexistingEntityException, RollbackFailureException, Exception {
+        if (cliente.getPedidoClienteList() == null) {
+            cliente.setPedidoClienteList(new ArrayList<PedidoCliente>());
+        }
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
+            List<PedidoCliente> attachedPedidoClienteList = new ArrayList<PedidoCliente>();
+            for (PedidoCliente pedidoClienteListPedidoClienteToAttach : cliente.getPedidoClienteList()) {
+                pedidoClienteListPedidoClienteToAttach = em.getReference(pedidoClienteListPedidoClienteToAttach.getClass(), pedidoClienteListPedidoClienteToAttach.getIdPedido());
+                attachedPedidoClienteList.add(pedidoClienteListPedidoClienteToAttach);
+            }
+            cliente.setPedidoClienteList(attachedPedidoClienteList);
             em.persist(cliente);
+            for (PedidoCliente pedidoClienteListPedidoCliente : cliente.getPedidoClienteList()) {
+                Cliente oldClienteOfPedidoClienteListPedidoCliente = pedidoClienteListPedidoCliente.getCliente();
+                pedidoClienteListPedidoCliente.setCliente(cliente);
+                pedidoClienteListPedidoCliente = em.merge(pedidoClienteListPedidoCliente);
+                if (oldClienteOfPedidoClienteListPedidoCliente != null) {
+                    oldClienteOfPedidoClienteListPedidoCliente.getPedidoClienteList().remove(pedidoClienteListPedidoCliente);
+                    oldClienteOfPedidoClienteListPedidoCliente = em.merge(oldClienteOfPedidoClienteListPedidoCliente);
+                }
+            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -72,12 +92,45 @@ public class ClienteJpaController implements Serializable {
         }
     }
 
-    public void edit(Cliente cliente) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Cliente cliente) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
+            Cliente persistentCliente = em.find(Cliente.class, cliente.getDni());
+            List<PedidoCliente> pedidoClienteListOld = persistentCliente.getPedidoClienteList();
+            List<PedidoCliente> pedidoClienteListNew = cliente.getPedidoClienteList();
+            List<String> illegalOrphanMessages = null;
+            for (PedidoCliente pedidoClienteListOldPedidoCliente : pedidoClienteListOld) {
+                if (!pedidoClienteListNew.contains(pedidoClienteListOldPedidoCliente)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain PedidoCliente " + pedidoClienteListOldPedidoCliente + " since its cliente field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            List<PedidoCliente> attachedPedidoClienteListNew = new ArrayList<PedidoCliente>();
+            for (PedidoCliente pedidoClienteListNewPedidoClienteToAttach : pedidoClienteListNew) {
+                pedidoClienteListNewPedidoClienteToAttach = em.getReference(pedidoClienteListNewPedidoClienteToAttach.getClass(), pedidoClienteListNewPedidoClienteToAttach.getIdPedido());
+                attachedPedidoClienteListNew.add(pedidoClienteListNewPedidoClienteToAttach);
+            }
+            pedidoClienteListNew = attachedPedidoClienteListNew;
+            cliente.setPedidoClienteList(pedidoClienteListNew);
             cliente = em.merge(cliente);
+            for (PedidoCliente pedidoClienteListNewPedidoCliente : pedidoClienteListNew) {
+                if (!pedidoClienteListOld.contains(pedidoClienteListNewPedidoCliente)) {
+                    Cliente oldClienteOfPedidoClienteListNewPedidoCliente = pedidoClienteListNewPedidoCliente.getCliente();
+                    pedidoClienteListNewPedidoCliente.setCliente(cliente);
+                    pedidoClienteListNewPedidoCliente = em.merge(pedidoClienteListNewPedidoCliente);
+                    if (oldClienteOfPedidoClienteListNewPedidoCliente != null && !oldClienteOfPedidoClienteListNewPedidoCliente.equals(cliente)) {
+                        oldClienteOfPedidoClienteListNewPedidoCliente.getPedidoClienteList().remove(pedidoClienteListNewPedidoCliente);
+                        oldClienteOfPedidoClienteListNewPedidoCliente = em.merge(oldClienteOfPedidoClienteListNewPedidoCliente);
+                    }
+                }
+            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -100,7 +153,7 @@ public class ClienteJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
@@ -111,6 +164,17 @@ public class ClienteJpaController implements Serializable {
                 cliente.getDni();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The cliente with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            List<PedidoCliente> pedidoClienteListOrphanCheck = cliente.getPedidoClienteList();
+            for (PedidoCliente pedidoClienteListOrphanCheckPedidoCliente : pedidoClienteListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Cliente (" + cliente + ") cannot be destroyed since the PedidoCliente " + pedidoClienteListOrphanCheckPedidoCliente + " in its pedidoClienteList field has a non-nullable cliente field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             em.remove(cliente);
             utx.commit();
@@ -174,22 +238,4 @@ public class ClienteJpaController implements Serializable {
         }
     }
 
-    public boolean login(String login, String password){
-        EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT c FROM Cliente c WHERE "
-                + "c.login = :login AND c.password = :password");
-        q.setParameter("login", login);
-        q.setParameter("password", password);
-        
-        try{
-            Cliente cliente = (Cliente) q.getSingleResult();
-            if(cliente != null){
-                return true;
-            }else{
-                return false;
-            }
-        }catch(NoResultException  ex){
-            return false;
-        }
-    }
 }
