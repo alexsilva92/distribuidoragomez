@@ -112,9 +112,16 @@ public class QueryJpaController {
         return q.getResultList();  
     }
     
-    public int getLastId(){
+    public int getUltimoIdPedidoCliente(){
         EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT @@identity AS id");
+        Query q = em.createQuery("SELECT MAX(p.idPedido) FROM PedidoCliente p");
+        
+        return (int) q.getSingleResult();
+    }
+    
+    public int getUltimoIdPedidoDistribuido(){
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery("SELECT MAX(p.idPedido) FROM PedidoCliente p");
         
         return (int) q.getSingleResult();
     }

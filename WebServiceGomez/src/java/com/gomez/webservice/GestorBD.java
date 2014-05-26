@@ -18,6 +18,7 @@ import com.gomez.bd.controller.EmpleadoJpaController;
 import com.gomez.bd.controller.PedidoClienteJpaController;
 import com.gomez.bd.controller.StockJpaController;
 import com.gomez.bd.controller.TieneDistribuidorJpaController;
+import com.gomez.bd.controller.TienePedidoClienteJpaController;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Cliente;
@@ -57,6 +58,7 @@ public class GestorBD {
     private EmpleadoJpaController empleadoController;
     private QueryJpaController queryController;
     private TieneDistribuidorJpaController tieneDistribuidorController;
+    private TienePedidoClienteJpaController tienePedidoClienteController;
 
     private ClienteJpaController getClienteController(){
         if(clienteController == null){
@@ -104,6 +106,14 @@ public class GestorBD {
                     em.getEntityManagerFactory());
         }
         return tieneDistribuidorController;
+    }
+    
+    private TienePedidoClienteJpaController getTienePedidoClienteController(){
+        if(tienePedidoClienteController == null){
+            tienePedidoClienteController = new TienePedidoClienteJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return tienePedidoClienteController;
     }
     
     private StockJpaController getStockController(){
@@ -467,24 +477,22 @@ public class GestorBD {
         pedido.setCliente(cliente);
         //pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
 
-//        List<TienePedidoCliente> productos = new ArrayList<>();
-//        for(StockBean stock: pedidoBean.getProductos()){
-//            tienePedido = new TienePedidoCliente();
-//            tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
-//            tienePedido.getTienePedidoClientePK().
-//                    setProducto(stock.getProducto().getCodigo());
-//            tienePedido.getTienePedidoClientePK().setPedido(
-//                    pedido.getIdPedido());
-//            tienePedido.setCantidad(stock.getCantidad());
-//
-//
-//            productos.add(tienePedido);
-//        }
-//
-//        pedido.setTienePedidoClienteList(productos);
+        
         try {
             getPedidoClienteController().create(pedido);
-            System.out.println(getQueryController().getLastId());
+            int id = getQueryController().getUltimoIdPedidoDistribuido();
+            List<TienePedidoCliente> productos = new ArrayList<>();
+            for(StockBean stock: pedidoBean.getProductos()){
+                tienePedido = new TienePedidoCliente();
+                tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
+                tienePedido.getTienePedidoClientePK().
+                        setProducto(stock.getProducto().getCodigo());
+                tienePedido.getTienePedidoClientePK().setPedido(id);
+                tienePedido.setCantidad(stock.getCantidad());
+
+
+                getTienePedidoClienteController().create(tienePedido);
+            }
             return true;
         } catch (Exception ex) {
             return false;
