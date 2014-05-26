@@ -121,8 +121,16 @@ public class QueryJpaController {
     
     public int getUltimoIdPedidoDistribuido(){
         EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT MAX(p.idPedido) FROM PedidoCliente p");
+        Query q = em.createQuery("SELECT MAX(p.idPedido) FROM PedidoDistribuidor p");
         
         return (int) q.getSingleResult();
+    }
+    
+    public String getDni(String login){
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery("SELECT c.dni FROM Cliente c WHERE c.login :login");
+        q.setParameter("login",login);
+        
+        return (String) q.getSingleResult();
     }
 }

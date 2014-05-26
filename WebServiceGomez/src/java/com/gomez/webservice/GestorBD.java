@@ -25,6 +25,7 @@ import com.gomez.bd.modelo.Cliente;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.PedidoCliente;
+import com.gomez.bd.modelo.Producto;
 import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import com.gomez.bd.modelo.TienePedidoCliente;
@@ -312,10 +313,11 @@ public class GestorBD {
     /**
      * Web service operation
      */
-    @WebMethod(operationName = "GetPedidosCliente")
-    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> GetPedidosCliente(@WebParam(name = "cliente") final String cliente) {
+    @WebMethod(operationName = "getPedidosCliente")
+    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> getPedidosCliente(@WebParam(name = "cliente") final String cliente) {
         List<PedidoClienteBean> pedidosBean = new ArrayList<PedidoClienteBean>();
-        List<PedidoCliente> pedidos = getQueryController().getPedidosPorCliente(cliente);
+        String dni = getQueryController().getDni(cliente);
+        List<PedidoCliente> pedidos = getQueryController().getPedidosPorCliente(dni);
         PedidoClienteBean pedidoBean;
         for(PedidoCliente pedido: pedidos){
             pedidoBean = getPedidoClienteBean(pedido);
@@ -466,7 +468,7 @@ public class GestorBD {
      */
     @WebMethod(operationName = "addPedidoCliente")
     public Boolean addPedidoCliente(@WebParam(name = "pedidoBean") PedidoClienteBean pedidoBean) {
-        PedidoCliente pedido;
+                PedidoCliente pedido;
         Cliente cliente ;
         TienePedidoCliente tienePedido;
         
@@ -481,13 +483,14 @@ public class GestorBD {
         try {
             getPedidoClienteController().create(pedido);
             int id = getQueryController().getUltimoIdPedidoDistribuido();
-            List<TienePedidoCliente> productos = new ArrayList<>();
+            pedido.setIdPedido(id);
+
             for(StockBean stock: pedidoBean.getProductos()){
                 tienePedido = new TienePedidoCliente();
-                tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
-                tienePedido.getTienePedidoClientePK().
-                        setProducto(stock.getProducto().getCodigo());
-                tienePedido.getTienePedidoClientePK().setPedido(id);
+                Producto producto = new Producto();
+                producto.setCodigo(stock.getProducto().getCodigo());
+                tienePedido.setProducto1(producto);
+                tienePedido.setPedidoCliente(pedido);
                 tienePedido.setCantidad(stock.getCantidad());
 
 
@@ -495,6 +498,7 @@ public class GestorBD {
             }
             return true;
         } catch (Exception ex) {
+            ex.printStackTrace();
             return false;
         }
     }
