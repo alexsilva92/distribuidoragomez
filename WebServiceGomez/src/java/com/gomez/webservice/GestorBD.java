@@ -214,25 +214,6 @@ public class GestorBD {
     /**
      * Web service operation
      */
-    @WebMethod(operationName = "getEmpleado")
-    public EmpleadoBean getEmpleado(@WebParam(name = "empleado") 
-    final String empleado) {
-        Empleado _empleado = getEmpleadoController().findEmpleado(empleado);
-        EmpleadoBean empleadoBean = null;
-        if(_empleado != null);{
-            empleadoBean = new EmpleadoBean();
-            empleadoBean.setDni(_empleado.getDni());
-            empleadoBean.setNombre(_empleado.getNombre());
-            empleadoBean.setApellidos(_empleado.getApellidos());
-            empleadoBean.setLogin(_empleado.getLogin());
-        }
-        
-        return empleadoBean;
-    }
-
-    /**
-     * Web service operation
-     */
     @WebMethod(operationName = "getClientes")
     public java.util.List<com.gomez.bd.bean.ClienteBean> getClientes() {
         List<Cliente> clientes = getClienteController().findClienteEntities();
@@ -254,6 +235,27 @@ public class GestorBD {
         return clientesBean;
     }
 
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "getEmpleados")
+    public java.util.List<com.gomez.bd.bean.EmpleadoBean> getEmpleados() {
+        List<Empleado> empleados = getEmpleadoController().findEmpleadoEntities();
+        List<EmpleadoBean> empleadosBean = new ArrayList<>();
+        EmpleadoBean empleadoBean;
+        for(Empleado empleado: empleados){
+            empleadoBean = new EmpleadoBean();
+            
+            empleadoBean.setDni(empleado.getDni());
+            empleadoBean.setNombre(empleado.getNombre());
+            empleadoBean.setApellidos(empleado.getApellidos());
+            empleadoBean.setLogin(empleado.getLogin());
+            
+            empleadosBean.add(empleadoBean);
+        }
+        return empleadosBean;
+    }
+    
     /**
      * Web service operation
      */
@@ -409,17 +411,21 @@ public class GestorBD {
         clienteBean.setNombre(pedido.getCliente().getNombre());
         clienteBean.setApellidos(pedido.getCliente().getApellidos());
 
-        empleadoBean = new EmpleadoBean();
-        empleadoBean.setDni(pedido.getEmpleado().getDni());
-        empleadoBean.setLogin(pedido.getEmpleado().getLogin());
-        empleadoBean.setNombre(pedido.getEmpleado().getNombre());
-        empleadoBean.setApellidos(pedido.getEmpleado().getApellidos());
+        if(pedido.getEmpleado() != null){
+            empleadoBean = new EmpleadoBean();
+            empleadoBean.setDni(pedido.getEmpleado().getDni());
+            empleadoBean.setLogin(pedido.getEmpleado().getLogin());
+            empleadoBean.setNombre(pedido.getEmpleado().getNombre());
+            empleadoBean.setApellidos(pedido.getEmpleado().getApellidos());
+            pedidoBean.setEmpleado(empleadoBean);
+        }
 
         pedidoBean.setIdPedido(pedido.getIdPedido());
         pedidoBean.setCliente(clienteBean);
-        pedidoBean.setEmpleado(empleadoBean);
         pedidoBean.setFechaLlegada(pedido.getFechaLllegada());
-        pedidoBean.setEstado(pedido.getEstado().getEstado());
+        
+        if(pedido.getEstado() != null)
+            pedidoBean.setEstado(pedido.getEstado().getEstado());
 
         List<StockBean> productos = new ArrayList<>();
         for(TienePedidoCliente stock: pedido.getTienePedidoClienteList()){
@@ -474,7 +480,7 @@ public class GestorBD {
         
         pedido = new PedidoCliente();
         cliente = new Cliente();
-        cliente.setDni(pedidoBean.getCliente().getDni());
+        cliente.setDni(getQueryController().getDni(pedidoBean.getCliente().getLogin()));
         
         pedido.setCliente(cliente);
         //pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
@@ -482,7 +488,7 @@ public class GestorBD {
         
         try {
             getPedidoClienteController().create(pedido);
-            int id = getQueryController().getUltimoIdPedidoDistribuido();
+            int id = getQueryController().getUltimoIdPedidoCliente();
             pedido.setIdPedido(id);
 
             for(StockBean stock: pedidoBean.getProductos()){

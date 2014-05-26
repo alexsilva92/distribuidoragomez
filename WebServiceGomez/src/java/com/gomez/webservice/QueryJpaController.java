@@ -128,7 +128,7 @@ public class QueryJpaController {
     
     public String getDni(String login){
         EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT c.dni FROM Cliente c WHERE c.login :login");
+        Query q = em.createQuery("SELECT c.dni FROM Cliente c WHERE c.login = :login");
         q.setParameter("login",login);
         
         return (String) q.getSingleResult();
