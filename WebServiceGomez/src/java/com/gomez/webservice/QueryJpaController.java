@@ -17,7 +17,6 @@
 package com.gomez.webservice;
 
 import com.gomez.bd.modelo.Cliente;
-import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.PedidoCliente;
 import com.gomez.bd.modelo.TieneDistribuidor;
@@ -110,6 +109,13 @@ public class QueryJpaController {
                 + "p.distribuidor = :distribuidor");
         q.setParameter("distribuidor",distribuidor);
         
-       return q.getResultList();  
+        return q.getResultList();  
+    }
+    
+    public int getLastId(){
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery("SELECT @@identity AS id");
+        
+        return (int) q.getSingleResult();
     }
 }

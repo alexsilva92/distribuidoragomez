@@ -22,6 +22,7 @@ import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Cliente;
 import com.gomez.bd.modelo.Distribuidor;
+import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.PedidoCliente;
 import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TieneDistribuidor;
@@ -197,6 +198,25 @@ public class GestorBD {
         }
         
         return clienteBean;
+    }
+    
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "getEmpleado")
+    public EmpleadoBean getEmpleado(@WebParam(name = "empleado") 
+    final String empleado) {
+        Empleado _empleado = getEmpleadoController().findEmpleado(empleado);
+        EmpleadoBean empleadoBean = null;
+        if(_empleado != null);{
+            empleadoBean = new EmpleadoBean();
+            empleadoBean.setDni(_empleado.getDni());
+            empleadoBean.setNombre(_empleado.getNombre());
+            empleadoBean.setApellidos(_empleado.getApellidos());
+            empleadoBean.setLogin(_empleado.getLogin());
+        }
+        
+        return empleadoBean;
     }
 
     /**
@@ -447,23 +467,24 @@ public class GestorBD {
         pedido.setCliente(cliente);
         //pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
 
-        List<TienePedidoCliente> productos = new ArrayList<>();
-        for(StockBean stock: pedidoBean.getProductos()){
-            tienePedido = new TienePedidoCliente();
-            tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
-            tienePedido.getTienePedidoClientePK().
-                    setProducto(stock.getProducto().getCodigo());
-            tienePedido.getTienePedidoClientePK().setPedido(
-                    pedido.getIdPedido());
-            tienePedido.setCantidad(stock.getCantidad());
-
-
-            productos.add(tienePedido);
-        }
-
-        pedido.setTienePedidoClienteList(productos);
+//        List<TienePedidoCliente> productos = new ArrayList<>();
+//        for(StockBean stock: pedidoBean.getProductos()){
+//            tienePedido = new TienePedidoCliente();
+//            tienePedido.setTienePedidoClientePK(new TienePedidoClientePK());
+//            tienePedido.getTienePedidoClientePK().
+//                    setProducto(stock.getProducto().getCodigo());
+//            tienePedido.getTienePedidoClientePK().setPedido(
+//                    pedido.getIdPedido());
+//            tienePedido.setCantidad(stock.getCantidad());
+//
+//
+//            productos.add(tienePedido);
+//        }
+//
+//        pedido.setTienePedidoClienteList(productos);
         try {
             getPedidoClienteController().create(pedido);
+            System.out.println(getQueryController().getLastId());
             return true;
         } catch (Exception ex) {
             return false;
