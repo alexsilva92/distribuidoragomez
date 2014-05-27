@@ -30,14 +30,13 @@ public class PedidoClienteBean implements Serializable {
     private EmpleadoBean empleado;
     private String estado;
     private Date fechaLlegada;
+    private Date fechaEmision;
     private List<StockBean> productos;
 
     public PedidoClienteBean() {
     }
 
-    public PedidoClienteBean(int idPedido, ClienteBean cliente, 
-    EmpleadoBean empleado, String estado, Date fechaLlegada,
-    List<StockBean> productos) {
+    public PedidoClienteBean(int idPedido, ClienteBean cliente, EmpleadoBean empleado, String estado, Date fechaLlegada, List<StockBean> productos) {
         this.idPedido = idPedido;
         this.cliente = cliente;
         this.empleado = empleado;
@@ -92,5 +91,13 @@ public class PedidoClienteBean implements Serializable {
 
     public void setProductos(List<StockBean> productos) {
         this.productos = productos;
+    }
+
+    public Date getFechaEmision() {
+        return fechaEmision;
+    }
+
+    public void setFechaEmision(Date fechaEmision) {
+        this.fechaEmision = fechaEmision;
     }
 }

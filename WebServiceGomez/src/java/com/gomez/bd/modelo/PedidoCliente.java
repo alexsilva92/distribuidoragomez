@@ -47,7 +47,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "PedidoCliente.findAll", query = "SELECT p FROM PedidoCliente p"),
     @NamedQuery(name = "PedidoCliente.findByIdPedido", query = "SELECT p FROM PedidoCliente p WHERE p.idPedido = :idPedido"),
-    @NamedQuery(name = "PedidoCliente.findByFechaLllegada", query = "SELECT p FROM PedidoCliente p WHERE p.fechaLllegada = :fechaLllegada")})
+    @NamedQuery(name = "PedidoCliente.findByFechaLlegada", query = "SELECT p FROM PedidoCliente p WHERE p.fechaLlegada = :fechaLlegada"),
+    @NamedQuery(name = "PedidoCliente.findByFechaEmision", query = "SELECT p FROM PedidoCliente p WHERE p.fechaEmision = :fechaEmision")})
 public class PedidoCliente implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -55,9 +56,12 @@ public class PedidoCliente implements Serializable {
     @Basic(optional = false)
     @Column(name = "idPedido")
     private Integer idPedido;
-    @Column(name = "fechaLllegada")
+    @Column(name = "fechaLlegada")
     @Temporal(TemporalType.DATE)
-    private Date fechaLllegada;
+    private Date fechaLlegada;
+    @Column(name = "fechaEmision")
+    @Temporal(TemporalType.DATE)
+    private Date fechaEmision;
     @JoinColumn(name = "estado", referencedColumnName = "estado")
     @ManyToOne
     private EstadoPedido estado;
@@ -85,12 +89,20 @@ public class PedidoCliente implements Serializable {
         this.idPedido = idPedido;
     }
 
-    public Date getFechaLllegada() {
-        return fechaLllegada;
+    public Date getFechaLlegada() {
+        return fechaLlegada;
     }
 
-    public void setFechaLllegada(Date fechaLllegada) {
-        this.fechaLllegada = fechaLllegada;
+    public void setFechaLlegada(Date fechaLlegada) {
+        this.fechaLlegada = fechaLlegada;
+    }
+
+    public Date getFechaEmision() {
+        return fechaEmision;
+    }
+
+    public void setFechaEmision(Date fechaEmision) {
+        this.fechaEmision = fechaEmision;
     }
 
     public EstadoPedido getEstado() {

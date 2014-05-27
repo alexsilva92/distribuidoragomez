@@ -422,7 +422,8 @@ public class GestorBD {
 
         pedidoBean.setIdPedido(pedido.getIdPedido());
         pedidoBean.setCliente(clienteBean);
-        pedidoBean.setFechaLlegada(pedido.getFechaLllegada());
+        pedidoBean.setFechaEmision(pedido.getFechaEmision());
+        pedidoBean.setFechaLlegada(pedido.getFechaLlegada());
         
         if(pedido.getEstado() != null)
             pedidoBean.setEstado(pedido.getEstado().getEstado());

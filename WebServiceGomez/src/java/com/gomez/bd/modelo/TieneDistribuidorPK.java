@@ -31,7 +31,7 @@ import javax.validation.constraints.Size;
 public class TieneDistribuidorPK implements Serializable {
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 9)
+    @Size(min = 1, max = 45)
     @Column(name = "distribuidor")
     private String distribuidor;
     @Basic(optional = false)
