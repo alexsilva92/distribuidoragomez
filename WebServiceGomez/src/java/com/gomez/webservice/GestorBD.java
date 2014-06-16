@@ -16,6 +16,7 @@ import com.gomez.bd.bean.PedidoDistribuidorBean;
 import com.gomez.bd.controller.ClienteJpaController;
 import com.gomez.bd.controller.DistribuidorJpaController;
 import com.gomez.bd.controller.EmpleadoJpaController;
+import com.gomez.bd.controller.EstadoPedidoJpaController;
 import com.gomez.bd.controller.PedidoClienteJpaController;
 import com.gomez.bd.controller.PedidoDistribuidorJpaController;
 import com.gomez.bd.controller.StockJpaController;
@@ -26,6 +27,7 @@ import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Cliente;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.Empleado;
+import com.gomez.bd.modelo.EstadoPedido;
 import com.gomez.bd.modelo.PedidoCliente;
 import com.gomez.bd.modelo.PedidoDistribuidor;
 import com.gomez.bd.modelo.Producto;
@@ -65,6 +67,7 @@ public class GestorBD {
     private DistribuidorJpaController distribuidorController;
     private StockJpaController stockController;
     private EmpleadoJpaController empleadoController;
+    private EstadoPedidoJpaController estadoPedidoController;
     private QueryJpaController queryController;
     private TienePedidoClienteJpaController tienePedidoClienteController;
     private TienePedidoDistribuidorJpaController tienePedidoDistribuidorController;
@@ -83,6 +86,14 @@ public class GestorBD {
                     em.getEntityManagerFactory());
         }
         return empleadoController;
+    }
+    
+    private EstadoPedidoJpaController getEstadoPedidoController(){
+        if(estadoPedidoController == null){
+            estadoPedidoController = new EstadoPedidoJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return estadoPedidoController;
     }
     
     private QueryJpaController getQueryController(){
@@ -536,10 +547,10 @@ public class GestorBD {
     /**
      * Web service operation
      */
-    @WebMethod(operationName = "getPedidosPendientes")
-    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> getPedidosPendientes() {
+    @WebMethod(operationName = "getPedidosSinEmpleado")
+    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> getPedidosSinEmpleado() {
         List<PedidoClienteBean> pedidosBean = new ArrayList<>();
-        List<PedidoCliente> pedidos = getQueryController().getPedidosPendientes();
+        List<PedidoCliente> pedidos = getQueryController().getPedidosSinEmpleado();
         PedidoClienteBean pedidoBean;
         for(PedidoCliente pedido: pedidos){
             pedidoBean = getPedidoClienteBean(pedido);
@@ -581,12 +592,7 @@ public class GestorBD {
         
         pedido.setDistribuidor(distribuidor);
 
-        Random r = new Random();
-        int diaAleatorio = r.nextInt(MAX_DIAS)+1;
-        
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.add(Calendar.DAY_OF_YEAR, diaAleatorio);
-        pedido.setFechaLlegada(gc.getTime());
+        pedido.setFechaLlegada(pedidoBean.getFechaLlegada());
 
         
         try {
@@ -608,6 +614,21 @@ public class GestorBD {
             return true;
         } catch (Exception ex) {
             ex.printStackTrace();
+            return false;
+        }
+    }
+    
+    @WebMethod(operationName = "setEmpleadoPedidoCliente")
+    public Boolean setEstadoPedidoCliente(@WebParam(name = "_pedido") final int _pedido, @WebParam(name = "_estado") final String _estado) {
+        try {
+            EstadoPedido estado =
+                    getEstadoPedidoController().findEstadoPedido(_estado);
+            PedidoCliente pedido =
+                    getPedidoClienteController().findPedidoCliente(_pedido);
+            pedido.setEstado(estado);
+            getPedidoClienteController().edit(pedido);
+            return true; 
+        } catch (Exception ex) {
             return false;
         }
     }

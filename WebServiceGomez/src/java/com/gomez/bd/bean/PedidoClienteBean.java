@@ -36,14 +36,19 @@ public class PedidoClienteBean implements Serializable {
     public PedidoClienteBean() {
     }
 
-    public PedidoClienteBean(int idPedido, ClienteBean cliente, EmpleadoBean empleado, String estado, Date fechaLlegada, List<StockBean> productos) {
+    public PedidoClienteBean(int idPedido, ClienteBean cliente, 
+    EmpleadoBean empleado, String estado, Date fechaLlegada, 
+    Date fechaEmision, List<StockBean> productos) {
         this.idPedido = idPedido;
         this.cliente = cliente;
         this.empleado = empleado;
         this.estado = estado;
         this.fechaLlegada = fechaLlegada;
+        this.fechaEmision = fechaEmision;
         this.productos = productos;
     }
+
+    
 
     public int getIdPedido() {
         return idPedido;

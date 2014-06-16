@@ -30,7 +30,6 @@ public class PedidoDistribuidorBean implements Serializable {
     private EmpleadoBean empleado;
     private String estado;
     private Date fechaLlegada;
-    private Date fechaEmision;
     private List<StockBean> productos;
 
     public PedidoDistribuidorBean() {
@@ -91,13 +90,5 @@ public class PedidoDistribuidorBean implements Serializable {
 
     public void setProductos(List<StockBean> productos) {
         this.productos = productos;
-    }
-
-    public Date getFechaEmision() {
-        return fechaEmision;
-    }
-
-    public void setFechaEmision(Date fechaEmision) {
-        this.fechaEmision = fechaEmision;
     }
 }

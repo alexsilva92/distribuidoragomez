@@ -135,10 +135,10 @@ public class QueryJpaController {
         return (String) q.getSingleResult();
     }
     
-    public List<PedidoCliente> getPedidosPendientes(){
+    public List<PedidoCliente> getPedidosSinEmpleado(){
         EntityManager em = getEntityManager();
         Query q = em.createQuery("SELECT p FROM PedidoCliente p "
-                + "WHERE p.estado.estado = \"Pendiente\"",PedidoCliente.class);  
+                + "WHERE p.empleado = NULL",PedidoCliente.class);  
         
         return q.getResultList();
     }
