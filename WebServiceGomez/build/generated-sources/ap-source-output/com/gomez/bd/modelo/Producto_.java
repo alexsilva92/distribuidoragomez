@@ -4,17 +4,19 @@ import com.gomez.bd.modelo.MarcaProducto;
 import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import com.gomez.bd.modelo.TienePedidoCliente;
+import com.gomez.bd.modelo.TienePedidoDistribuidor;
 import javax.annotation.Generated;
 import javax.persistence.metamodel.ListAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
-@Generated(value="EclipseLink-2.5.1.v20130918-rNA", date="2014-06-16T13:16:16")
+@Generated(value="EclipseLink-2.5.1.v20130918-rNA", date="2014-06-16T18:49:29")
 @StaticMetamodel(Producto.class)
 public class Producto_ { 
 
     public static volatile SingularAttribute<Producto, String> codigo;
     public static volatile SingularAttribute<Producto, String> nombre;
+    public static volatile ListAttribute<Producto, TienePedidoDistribuidor> tienePedidoDistribuidorList;
     public static volatile SingularAttribute<Producto, String> imagen;
     public static volatile SingularAttribute<Producto, Stock> stock;
     public static volatile SingularAttribute<Producto, Float> precio;
