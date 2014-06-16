@@ -105,11 +105,12 @@ public class QueryJpaController {
     public List<TieneDistribuidor> getProductosDistribuidor(String 
     distribuidor) {
         EntityManager em = getEntityManager();
-        Query q = em.createQuery("SELECT p FROM TieneDistribuidor p WHERE "
-                + "p.distribuidor = :distribuidor");
+        Query q = em.createQuery("SELECT t FROM TieneDistribuidor t "
+                + "WHERE t.distribuidor1.cifNif = :distribuidor", 
+                TieneDistribuidor.class);  
         q.setParameter("distribuidor",distribuidor);
         
-        return q.getResultList();  
+        return q.getResultList();
     }
     
     public int getUltimoIdPedidoCliente(){
@@ -132,5 +133,13 @@ public class QueryJpaController {
         q.setParameter("login",login);
         
         return (String) q.getSingleResult();
+    }
+    
+    public List<PedidoCliente> getPedidosPendientes(){
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery("SELECT p FROM PedidoCliente p "
+                + "WHERE p.estado.estado = \"Pendiente\"",PedidoCliente.class);  
+        
+        return q.getResultList();
     }
 }

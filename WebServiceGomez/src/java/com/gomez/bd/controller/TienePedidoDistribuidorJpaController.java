@@ -19,16 +19,18 @@ package com.gomez.bd.controller;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.PreexistingEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
-import com.gomez.bd.modelo.TienePedidoDistribuidor;
-import com.gomez.bd.modelo.TienePedidoDistribuidorPK;
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.gomez.bd.modelo.PedidoDistribuidor;
+import com.gomez.bd.modelo.Producto;
+import com.gomez.bd.modelo.TienePedidoDistribuidor;
+import com.gomez.bd.modelo.TienePedidoDistribuidorPK;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
 /**
@@ -52,11 +54,31 @@ public class TienePedidoDistribuidorJpaController implements Serializable {
         if (tienePedidoDistribuidor.getTienePedidoDistribuidorPK() == null) {
             tienePedidoDistribuidor.setTienePedidoDistribuidorPK(new TienePedidoDistribuidorPK());
         }
+        tienePedidoDistribuidor.getTienePedidoDistribuidorPK().setProducto(tienePedidoDistribuidor.getProducto1().getCodigo());
+        tienePedidoDistribuidor.getTienePedidoDistribuidorPK().setPedido(tienePedidoDistribuidor.getPedidoDistribuidor().getIdPedido());
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
+            PedidoDistribuidor pedidoDistribuidor = tienePedidoDistribuidor.getPedidoDistribuidor();
+            if (pedidoDistribuidor != null) {
+                pedidoDistribuidor = em.getReference(pedidoDistribuidor.getClass(), pedidoDistribuidor.getIdPedido());
+                tienePedidoDistribuidor.setPedidoDistribuidor(pedidoDistribuidor);
+            }
+            Producto producto1 = tienePedidoDistribuidor.getProducto1();
+            if (producto1 != null) {
+                producto1 = em.getReference(producto1.getClass(), producto1.getCodigo());
+                tienePedidoDistribuidor.setProducto1(producto1);
+            }
             em.persist(tienePedidoDistribuidor);
+            if (pedidoDistribuidor != null) {
+                pedidoDistribuidor.getTienePedidoDistribuidorList().add(tienePedidoDistribuidor);
+                pedidoDistribuidor = em.merge(pedidoDistribuidor);
+            }
+            if (producto1 != null) {
+                producto1.getTienePedidoDistribuidorList().add(tienePedidoDistribuidor);
+                producto1 = em.merge(producto1);
+            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -76,11 +98,42 @@ public class TienePedidoDistribuidorJpaController implements Serializable {
     }
 
     public void edit(TienePedidoDistribuidor tienePedidoDistribuidor) throws NonexistentEntityException, RollbackFailureException, Exception {
+        tienePedidoDistribuidor.getTienePedidoDistribuidorPK().setProducto(tienePedidoDistribuidor.getProducto1().getCodigo());
+        tienePedidoDistribuidor.getTienePedidoDistribuidorPK().setPedido(tienePedidoDistribuidor.getPedidoDistribuidor().getIdPedido());
         EntityManager em = null;
         try {
             utx.begin();
             em = getEntityManager();
+            TienePedidoDistribuidor persistentTienePedidoDistribuidor = em.find(TienePedidoDistribuidor.class, tienePedidoDistribuidor.getTienePedidoDistribuidorPK());
+            PedidoDistribuidor pedidoDistribuidorOld = persistentTienePedidoDistribuidor.getPedidoDistribuidor();
+            PedidoDistribuidor pedidoDistribuidorNew = tienePedidoDistribuidor.getPedidoDistribuidor();
+            Producto producto1Old = persistentTienePedidoDistribuidor.getProducto1();
+            Producto producto1New = tienePedidoDistribuidor.getProducto1();
+            if (pedidoDistribuidorNew != null) {
+                pedidoDistribuidorNew = em.getReference(pedidoDistribuidorNew.getClass(), pedidoDistribuidorNew.getIdPedido());
+                tienePedidoDistribuidor.setPedidoDistribuidor(pedidoDistribuidorNew);
+            }
+            if (producto1New != null) {
+                producto1New = em.getReference(producto1New.getClass(), producto1New.getCodigo());
+                tienePedidoDistribuidor.setProducto1(producto1New);
+            }
             tienePedidoDistribuidor = em.merge(tienePedidoDistribuidor);
+            if (pedidoDistribuidorOld != null && !pedidoDistribuidorOld.equals(pedidoDistribuidorNew)) {
+                pedidoDistribuidorOld.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidor);
+                pedidoDistribuidorOld = em.merge(pedidoDistribuidorOld);
+            }
+            if (pedidoDistribuidorNew != null && !pedidoDistribuidorNew.equals(pedidoDistribuidorOld)) {
+                pedidoDistribuidorNew.getTienePedidoDistribuidorList().add(tienePedidoDistribuidor);
+                pedidoDistribuidorNew = em.merge(pedidoDistribuidorNew);
+            }
+            if (producto1Old != null && !producto1Old.equals(producto1New)) {
+                producto1Old.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidor);
+                producto1Old = em.merge(producto1Old);
+            }
+            if (producto1New != null && !producto1New.equals(producto1Old)) {
+                producto1New.getTienePedidoDistribuidorList().add(tienePedidoDistribuidor);
+                producto1New = em.merge(producto1New);
+            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -114,6 +167,16 @@ public class TienePedidoDistribuidorJpaController implements Serializable {
                 tienePedidoDistribuidor.getTienePedidoDistribuidorPK();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The tienePedidoDistribuidor with id " + id + " no longer exists.", enfe);
+            }
+            PedidoDistribuidor pedidoDistribuidor = tienePedidoDistribuidor.getPedidoDistribuidor();
+            if (pedidoDistribuidor != null) {
+                pedidoDistribuidor.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidor);
+                pedidoDistribuidor = em.merge(pedidoDistribuidor);
+            }
+            Producto producto1 = tienePedidoDistribuidor.getProducto1();
+            if (producto1 != null) {
+                producto1.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidor);
+                producto1 = em.merge(producto1);
             }
             em.remove(tienePedidoDistribuidor);
             utx.commit();

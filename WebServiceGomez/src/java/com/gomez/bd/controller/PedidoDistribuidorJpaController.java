@@ -16,6 +16,7 @@
 
 package com.gomez.bd.controller;
 
+import com.gomez.bd.controller.exceptions.IllegalOrphanException;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import java.io.Serializable;
@@ -27,6 +28,8 @@ import com.gomez.bd.modelo.EstadoPedido;
 import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.PedidoDistribuidor;
+import com.gomez.bd.modelo.TienePedidoDistribuidor;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -50,6 +53,9 @@ public class PedidoDistribuidorJpaController implements Serializable {
     }
 
     public void create(PedidoDistribuidor pedidoDistribuidor) throws RollbackFailureException, Exception {
+        if (pedidoDistribuidor.getTienePedidoDistribuidorList() == null) {
+            pedidoDistribuidor.setTienePedidoDistribuidorList(new ArrayList<TienePedidoDistribuidor>());
+        }
         EntityManager em = null;
         try {
             utx.begin();
@@ -69,6 +75,12 @@ public class PedidoDistribuidorJpaController implements Serializable {
                 distribuidor = em.getReference(distribuidor.getClass(), distribuidor.getCifNif());
                 pedidoDistribuidor.setDistribuidor(distribuidor);
             }
+            List<TienePedidoDistribuidor> attachedTienePedidoDistribuidorList = new ArrayList<TienePedidoDistribuidor>();
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListTienePedidoDistribuidorToAttach : pedidoDistribuidor.getTienePedidoDistribuidorList()) {
+                tienePedidoDistribuidorListTienePedidoDistribuidorToAttach = em.getReference(tienePedidoDistribuidorListTienePedidoDistribuidorToAttach.getClass(), tienePedidoDistribuidorListTienePedidoDistribuidorToAttach.getTienePedidoDistribuidorPK());
+                attachedTienePedidoDistribuidorList.add(tienePedidoDistribuidorListTienePedidoDistribuidorToAttach);
+            }
+            pedidoDistribuidor.setTienePedidoDistribuidorList(attachedTienePedidoDistribuidorList);
             em.persist(pedidoDistribuidor);
             if (estado != null) {
                 estado.getPedidoDistribuidorList().add(pedidoDistribuidor);
@@ -81,6 +93,15 @@ public class PedidoDistribuidorJpaController implements Serializable {
             if (distribuidor != null) {
                 distribuidor.getPedidoDistribuidorList().add(pedidoDistribuidor);
                 distribuidor = em.merge(distribuidor);
+            }
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListTienePedidoDistribuidor : pedidoDistribuidor.getTienePedidoDistribuidorList()) {
+                PedidoDistribuidor oldPedidoDistribuidorOfTienePedidoDistribuidorListTienePedidoDistribuidor = tienePedidoDistribuidorListTienePedidoDistribuidor.getPedidoDistribuidor();
+                tienePedidoDistribuidorListTienePedidoDistribuidor.setPedidoDistribuidor(pedidoDistribuidor);
+                tienePedidoDistribuidorListTienePedidoDistribuidor = em.merge(tienePedidoDistribuidorListTienePedidoDistribuidor);
+                if (oldPedidoDistribuidorOfTienePedidoDistribuidorListTienePedidoDistribuidor != null) {
+                    oldPedidoDistribuidorOfTienePedidoDistribuidorListTienePedidoDistribuidor.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidorListTienePedidoDistribuidor);
+                    oldPedidoDistribuidorOfTienePedidoDistribuidorListTienePedidoDistribuidor = em.merge(oldPedidoDistribuidorOfTienePedidoDistribuidorListTienePedidoDistribuidor);
+                }
             }
             utx.commit();
         } catch (Exception ex) {
@@ -97,7 +118,7 @@ public class PedidoDistribuidorJpaController implements Serializable {
         }
     }
 
-    public void edit(PedidoDistribuidor pedidoDistribuidor) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(PedidoDistribuidor pedidoDistribuidor) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
@@ -109,6 +130,20 @@ public class PedidoDistribuidorJpaController implements Serializable {
             Empleado empleadoNew = pedidoDistribuidor.getEmpleado();
             Distribuidor distribuidorOld = persistentPedidoDistribuidor.getDistribuidor();
             Distribuidor distribuidorNew = pedidoDistribuidor.getDistribuidor();
+            List<TienePedidoDistribuidor> tienePedidoDistribuidorListOld = persistentPedidoDistribuidor.getTienePedidoDistribuidorList();
+            List<TienePedidoDistribuidor> tienePedidoDistribuidorListNew = pedidoDistribuidor.getTienePedidoDistribuidorList();
+            List<String> illegalOrphanMessages = null;
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListOldTienePedidoDistribuidor : tienePedidoDistribuidorListOld) {
+                if (!tienePedidoDistribuidorListNew.contains(tienePedidoDistribuidorListOldTienePedidoDistribuidor)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain TienePedidoDistribuidor " + tienePedidoDistribuidorListOldTienePedidoDistribuidor + " since its pedidoDistribuidor field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
             if (estadoNew != null) {
                 estadoNew = em.getReference(estadoNew.getClass(), estadoNew.getEstado());
                 pedidoDistribuidor.setEstado(estadoNew);
@@ -121,6 +156,13 @@ public class PedidoDistribuidorJpaController implements Serializable {
                 distribuidorNew = em.getReference(distribuidorNew.getClass(), distribuidorNew.getCifNif());
                 pedidoDistribuidor.setDistribuidor(distribuidorNew);
             }
+            List<TienePedidoDistribuidor> attachedTienePedidoDistribuidorListNew = new ArrayList<TienePedidoDistribuidor>();
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach : tienePedidoDistribuidorListNew) {
+                tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach = em.getReference(tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach.getClass(), tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach.getTienePedidoDistribuidorPK());
+                attachedTienePedidoDistribuidorListNew.add(tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach);
+            }
+            tienePedidoDistribuidorListNew = attachedTienePedidoDistribuidorListNew;
+            pedidoDistribuidor.setTienePedidoDistribuidorList(tienePedidoDistribuidorListNew);
             pedidoDistribuidor = em.merge(pedidoDistribuidor);
             if (estadoOld != null && !estadoOld.equals(estadoNew)) {
                 estadoOld.getPedidoDistribuidorList().remove(pedidoDistribuidor);
@@ -146,6 +188,17 @@ public class PedidoDistribuidorJpaController implements Serializable {
                 distribuidorNew.getPedidoDistribuidorList().add(pedidoDistribuidor);
                 distribuidorNew = em.merge(distribuidorNew);
             }
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListNewTienePedidoDistribuidor : tienePedidoDistribuidorListNew) {
+                if (!tienePedidoDistribuidorListOld.contains(tienePedidoDistribuidorListNewTienePedidoDistribuidor)) {
+                    PedidoDistribuidor oldPedidoDistribuidorOfTienePedidoDistribuidorListNewTienePedidoDistribuidor = tienePedidoDistribuidorListNewTienePedidoDistribuidor.getPedidoDistribuidor();
+                    tienePedidoDistribuidorListNewTienePedidoDistribuidor.setPedidoDistribuidor(pedidoDistribuidor);
+                    tienePedidoDistribuidorListNewTienePedidoDistribuidor = em.merge(tienePedidoDistribuidorListNewTienePedidoDistribuidor);
+                    if (oldPedidoDistribuidorOfTienePedidoDistribuidorListNewTienePedidoDistribuidor != null && !oldPedidoDistribuidorOfTienePedidoDistribuidorListNewTienePedidoDistribuidor.equals(pedidoDistribuidor)) {
+                        oldPedidoDistribuidorOfTienePedidoDistribuidorListNewTienePedidoDistribuidor.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidorListNewTienePedidoDistribuidor);
+                        oldPedidoDistribuidorOfTienePedidoDistribuidorListNewTienePedidoDistribuidor = em.merge(oldPedidoDistribuidorOfTienePedidoDistribuidorListNewTienePedidoDistribuidor);
+                    }
+                }
+            }
             utx.commit();
         } catch (Exception ex) {
             try {
@@ -168,7 +221,7 @@ public class PedidoDistribuidorJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             utx.begin();
@@ -179,6 +232,17 @@ public class PedidoDistribuidorJpaController implements Serializable {
                 pedidoDistribuidor.getIdPedido();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The pedidoDistribuidor with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            List<TienePedidoDistribuidor> tienePedidoDistribuidorListOrphanCheck = pedidoDistribuidor.getTienePedidoDistribuidorList();
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListOrphanCheckTienePedidoDistribuidor : tienePedidoDistribuidorListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This PedidoDistribuidor (" + pedidoDistribuidor + ") cannot be destroyed since the TienePedidoDistribuidor " + tienePedidoDistribuidorListOrphanCheckTienePedidoDistribuidor + " in its tienePedidoDistribuidorList field has a non-nullable pedidoDistribuidor field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             EstadoPedido estado = pedidoDistribuidor.getEstado();
             if (estado != null) {

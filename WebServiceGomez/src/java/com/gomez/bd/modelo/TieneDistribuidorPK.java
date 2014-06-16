@@ -36,7 +36,7 @@ public class TieneDistribuidorPK implements Serializable {
     private String distribuidor;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 45)
+    @Size(min = 1, max = 15)
     @Column(name = "producto")
     private String producto;
 

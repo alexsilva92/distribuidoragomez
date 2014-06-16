@@ -64,6 +64,8 @@ public class Distribuidor implements Serializable {
     private String telefono;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "distribuidor")
     private List<PedidoDistribuidor> pedidoDistribuidorList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "distribuidor1")
+    private List<TieneDistribuidor> tieneDistribuidorList;
 
     public Distribuidor() {
     }
@@ -109,6 +111,15 @@ public class Distribuidor implements Serializable {
 
     public void setPedidoDistribuidorList(List<PedidoDistribuidor> pedidoDistribuidorList) {
         this.pedidoDistribuidorList = pedidoDistribuidorList;
+    }
+
+    @XmlTransient
+    public List<TieneDistribuidor> getTieneDistribuidorList() {
+        return tieneDistribuidorList;
+    }
+
+    public void setTieneDistribuidorList(List<TieneDistribuidor> tieneDistribuidorList) {
+        this.tieneDistribuidorList = tieneDistribuidorList;
     }
 
     @Override

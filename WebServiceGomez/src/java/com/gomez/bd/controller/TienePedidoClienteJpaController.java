@@ -54,8 +54,8 @@ public class TienePedidoClienteJpaController implements Serializable {
         if (tienePedidoCliente.getTienePedidoClientePK() == null) {
             tienePedidoCliente.setTienePedidoClientePK(new TienePedidoClientePK());
         }
-        tienePedidoCliente.getTienePedidoClientePK().setPedido(tienePedidoCliente.getPedidoCliente().getIdPedido());
         tienePedidoCliente.getTienePedidoClientePK().setProducto(tienePedidoCliente.getProducto1().getCodigo());
+        tienePedidoCliente.getTienePedidoClientePK().setPedido(tienePedidoCliente.getPedidoCliente().getIdPedido());
         EntityManager em = null;
         try {
             utx.begin();
@@ -98,8 +98,8 @@ public class TienePedidoClienteJpaController implements Serializable {
     }
 
     public void edit(TienePedidoCliente tienePedidoCliente) throws NonexistentEntityException, RollbackFailureException, Exception {
-        tienePedidoCliente.getTienePedidoClientePK().setPedido(tienePedidoCliente.getPedidoCliente().getIdPedido());
         tienePedidoCliente.getTienePedidoClientePK().setProducto(tienePedidoCliente.getProducto1().getCodigo());
+        tienePedidoCliente.getTienePedidoClientePK().setPedido(tienePedidoCliente.getPedidoCliente().getIdPedido());
         EntityManager em = null;
         try {
             utx.begin();

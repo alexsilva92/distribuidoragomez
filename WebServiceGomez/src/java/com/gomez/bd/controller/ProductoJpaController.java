@@ -31,6 +31,7 @@ import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TienePedidoCliente;
 import java.util.ArrayList;
 import java.util.List;
+import com.gomez.bd.modelo.TienePedidoDistribuidor;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -57,6 +58,9 @@ public class ProductoJpaController implements Serializable {
         if (producto.getTienePedidoClienteList() == null) {
             producto.setTienePedidoClienteList(new ArrayList<TienePedidoCliente>());
         }
+        if (producto.getTienePedidoDistribuidorList() == null) {
+            producto.setTienePedidoDistribuidorList(new ArrayList<TienePedidoDistribuidor>());
+        }
         if (producto.getTieneDistribuidorList() == null) {
             producto.setTieneDistribuidorList(new ArrayList<TieneDistribuidor>());
         }
@@ -80,6 +84,12 @@ public class ProductoJpaController implements Serializable {
                 attachedTienePedidoClienteList.add(tienePedidoClienteListTienePedidoClienteToAttach);
             }
             producto.setTienePedidoClienteList(attachedTienePedidoClienteList);
+            List<TienePedidoDistribuidor> attachedTienePedidoDistribuidorList = new ArrayList<TienePedidoDistribuidor>();
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListTienePedidoDistribuidorToAttach : producto.getTienePedidoDistribuidorList()) {
+                tienePedidoDistribuidorListTienePedidoDistribuidorToAttach = em.getReference(tienePedidoDistribuidorListTienePedidoDistribuidorToAttach.getClass(), tienePedidoDistribuidorListTienePedidoDistribuidorToAttach.getTienePedidoDistribuidorPK());
+                attachedTienePedidoDistribuidorList.add(tienePedidoDistribuidorListTienePedidoDistribuidorToAttach);
+            }
+            producto.setTienePedidoDistribuidorList(attachedTienePedidoDistribuidorList);
             List<TieneDistribuidor> attachedTieneDistribuidorList = new ArrayList<TieneDistribuidor>();
             for (TieneDistribuidor tieneDistribuidorListTieneDistribuidorToAttach : producto.getTieneDistribuidorList()) {
                 tieneDistribuidorListTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListTieneDistribuidorToAttach.getClass(), tieneDistribuidorListTieneDistribuidorToAttach.getTieneDistribuidorPK());
@@ -107,6 +117,15 @@ public class ProductoJpaController implements Serializable {
                 if (oldProducto1OfTienePedidoClienteListTienePedidoCliente != null) {
                     oldProducto1OfTienePedidoClienteListTienePedidoCliente.getTienePedidoClienteList().remove(tienePedidoClienteListTienePedidoCliente);
                     oldProducto1OfTienePedidoClienteListTienePedidoCliente = em.merge(oldProducto1OfTienePedidoClienteListTienePedidoCliente);
+                }
+            }
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListTienePedidoDistribuidor : producto.getTienePedidoDistribuidorList()) {
+                Producto oldProducto1OfTienePedidoDistribuidorListTienePedidoDistribuidor = tienePedidoDistribuidorListTienePedidoDistribuidor.getProducto1();
+                tienePedidoDistribuidorListTienePedidoDistribuidor.setProducto1(producto);
+                tienePedidoDistribuidorListTienePedidoDistribuidor = em.merge(tienePedidoDistribuidorListTienePedidoDistribuidor);
+                if (oldProducto1OfTienePedidoDistribuidorListTienePedidoDistribuidor != null) {
+                    oldProducto1OfTienePedidoDistribuidorListTienePedidoDistribuidor.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidorListTienePedidoDistribuidor);
+                    oldProducto1OfTienePedidoDistribuidorListTienePedidoDistribuidor = em.merge(oldProducto1OfTienePedidoDistribuidorListTienePedidoDistribuidor);
                 }
             }
             for (TieneDistribuidor tieneDistribuidorListTieneDistribuidor : producto.getTieneDistribuidorList()) {
@@ -148,6 +167,8 @@ public class ProductoJpaController implements Serializable {
             Stock stockNew = producto.getStock();
             List<TienePedidoCliente> tienePedidoClienteListOld = persistentProducto.getTienePedidoClienteList();
             List<TienePedidoCliente> tienePedidoClienteListNew = producto.getTienePedidoClienteList();
+            List<TienePedidoDistribuidor> tienePedidoDistribuidorListOld = persistentProducto.getTienePedidoDistribuidorList();
+            List<TienePedidoDistribuidor> tienePedidoDistribuidorListNew = producto.getTienePedidoDistribuidorList();
             List<TieneDistribuidor> tieneDistribuidorListOld = persistentProducto.getTieneDistribuidorList();
             List<TieneDistribuidor> tieneDistribuidorListNew = producto.getTieneDistribuidorList();
             List<String> illegalOrphanMessages = null;
@@ -163,6 +184,14 @@ public class ProductoJpaController implements Serializable {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
                     illegalOrphanMessages.add("You must retain TienePedidoCliente " + tienePedidoClienteListOldTienePedidoCliente + " since its producto1 field is not nullable.");
+                }
+            }
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListOldTienePedidoDistribuidor : tienePedidoDistribuidorListOld) {
+                if (!tienePedidoDistribuidorListNew.contains(tienePedidoDistribuidorListOldTienePedidoDistribuidor)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain TienePedidoDistribuidor " + tienePedidoDistribuidorListOldTienePedidoDistribuidor + " since its producto1 field is not nullable.");
                 }
             }
             for (TieneDistribuidor tieneDistribuidorListOldTieneDistribuidor : tieneDistribuidorListOld) {
@@ -191,6 +220,13 @@ public class ProductoJpaController implements Serializable {
             }
             tienePedidoClienteListNew = attachedTienePedidoClienteListNew;
             producto.setTienePedidoClienteList(tienePedidoClienteListNew);
+            List<TienePedidoDistribuidor> attachedTienePedidoDistribuidorListNew = new ArrayList<TienePedidoDistribuidor>();
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach : tienePedidoDistribuidorListNew) {
+                tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach = em.getReference(tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach.getClass(), tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach.getTienePedidoDistribuidorPK());
+                attachedTienePedidoDistribuidorListNew.add(tienePedidoDistribuidorListNewTienePedidoDistribuidorToAttach);
+            }
+            tienePedidoDistribuidorListNew = attachedTienePedidoDistribuidorListNew;
+            producto.setTienePedidoDistribuidorList(tienePedidoDistribuidorListNew);
             List<TieneDistribuidor> attachedTieneDistribuidorListNew = new ArrayList<TieneDistribuidor>();
             for (TieneDistribuidor tieneDistribuidorListNewTieneDistribuidorToAttach : tieneDistribuidorListNew) {
                 tieneDistribuidorListNewTieneDistribuidorToAttach = em.getReference(tieneDistribuidorListNewTieneDistribuidorToAttach.getClass(), tieneDistribuidorListNewTieneDistribuidorToAttach.getTieneDistribuidorPK());
@@ -224,6 +260,17 @@ public class ProductoJpaController implements Serializable {
                     if (oldProducto1OfTienePedidoClienteListNewTienePedidoCliente != null && !oldProducto1OfTienePedidoClienteListNewTienePedidoCliente.equals(producto)) {
                         oldProducto1OfTienePedidoClienteListNewTienePedidoCliente.getTienePedidoClienteList().remove(tienePedidoClienteListNewTienePedidoCliente);
                         oldProducto1OfTienePedidoClienteListNewTienePedidoCliente = em.merge(oldProducto1OfTienePedidoClienteListNewTienePedidoCliente);
+                    }
+                }
+            }
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListNewTienePedidoDistribuidor : tienePedidoDistribuidorListNew) {
+                if (!tienePedidoDistribuidorListOld.contains(tienePedidoDistribuidorListNewTienePedidoDistribuidor)) {
+                    Producto oldProducto1OfTienePedidoDistribuidorListNewTienePedidoDistribuidor = tienePedidoDistribuidorListNewTienePedidoDistribuidor.getProducto1();
+                    tienePedidoDistribuidorListNewTienePedidoDistribuidor.setProducto1(producto);
+                    tienePedidoDistribuidorListNewTienePedidoDistribuidor = em.merge(tienePedidoDistribuidorListNewTienePedidoDistribuidor);
+                    if (oldProducto1OfTienePedidoDistribuidorListNewTienePedidoDistribuidor != null && !oldProducto1OfTienePedidoDistribuidorListNewTienePedidoDistribuidor.equals(producto)) {
+                        oldProducto1OfTienePedidoDistribuidorListNewTienePedidoDistribuidor.getTienePedidoDistribuidorList().remove(tienePedidoDistribuidorListNewTienePedidoDistribuidor);
+                        oldProducto1OfTienePedidoDistribuidorListNewTienePedidoDistribuidor = em.merge(oldProducto1OfTienePedidoDistribuidorListNewTienePedidoDistribuidor);
                     }
                 }
             }
@@ -286,6 +333,13 @@ public class ProductoJpaController implements Serializable {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
                 illegalOrphanMessages.add("This Producto (" + producto + ") cannot be destroyed since the TienePedidoCliente " + tienePedidoClienteListOrphanCheckTienePedidoCliente + " in its tienePedidoClienteList field has a non-nullable producto1 field.");
+            }
+            List<TienePedidoDistribuidor> tienePedidoDistribuidorListOrphanCheck = producto.getTienePedidoDistribuidorList();
+            for (TienePedidoDistribuidor tienePedidoDistribuidorListOrphanCheckTienePedidoDistribuidor : tienePedidoDistribuidorListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Producto (" + producto + ") cannot be destroyed since the TienePedidoDistribuidor " + tienePedidoDistribuidorListOrphanCheckTienePedidoDistribuidor + " in its tienePedidoDistribuidorList field has a non-nullable producto1 field.");
             }
             List<TieneDistribuidor> tieneDistribuidorListOrphanCheck = producto.getTieneDistribuidorList();
             for (TieneDistribuidor tieneDistribuidorListOrphanCheckTieneDistribuidor : tieneDistribuidorListOrphanCheck) {

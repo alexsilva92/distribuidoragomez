@@ -12,28 +12,33 @@ import com.gomez.bd.bean.ClienteBean;
 import com.gomez.bd.bean.DistribuidorBean;
 import com.gomez.bd.bean.EmpleadoBean;
 import com.gomez.bd.bean.PedidoClienteBean;
+import com.gomez.bd.bean.PedidoDistribuidorBean;
 import com.gomez.bd.controller.ClienteJpaController;
 import com.gomez.bd.controller.DistribuidorJpaController;
 import com.gomez.bd.controller.EmpleadoJpaController;
 import com.gomez.bd.controller.PedidoClienteJpaController;
+import com.gomez.bd.controller.PedidoDistribuidorJpaController;
 import com.gomez.bd.controller.StockJpaController;
-import com.gomez.bd.controller.TieneDistribuidorJpaController;
 import com.gomez.bd.controller.TienePedidoClienteJpaController;
+import com.gomez.bd.controller.TienePedidoDistribuidorJpaController;
 import com.gomez.bd.controller.exceptions.NonexistentEntityException;
 import com.gomez.bd.controller.exceptions.RollbackFailureException;
 import com.gomez.bd.modelo.Cliente;
 import com.gomez.bd.modelo.Distribuidor;
 import com.gomez.bd.modelo.Empleado;
 import com.gomez.bd.modelo.PedidoCliente;
+import com.gomez.bd.modelo.PedidoDistribuidor;
 import com.gomez.bd.modelo.Producto;
 import com.gomez.bd.modelo.Stock;
 import com.gomez.bd.modelo.TieneDistribuidor;
 import com.gomez.bd.modelo.TienePedidoCliente;
-import com.gomez.bd.modelo.TienePedidoClientePK;
+import com.gomez.bd.modelo.TienePedidoDistribuidor;
+import com.utilidades.gson.GsonS;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Random;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -51,15 +56,18 @@ public class GestorBD {
     private EntityManager em;
     @Resource
     private javax.transaction.UserTransaction utx;
+    
+    private static final int MAX_DIAS = 10;
 
     private ClienteJpaController clienteController;
     private PedidoClienteJpaController pedidoClienteController;
+    private PedidoDistribuidorJpaController pedidoDistribuidorController;
     private DistribuidorJpaController distribuidorController;
     private StockJpaController stockController;
     private EmpleadoJpaController empleadoController;
     private QueryJpaController queryController;
-    private TieneDistribuidorJpaController tieneDistribuidorController;
     private TienePedidoClienteJpaController tienePedidoClienteController;
+    private TienePedidoDistribuidorJpaController tienePedidoDistribuidorController;
 
     private ClienteJpaController getClienteController(){
         if(clienteController == null){
@@ -93,6 +101,14 @@ public class GestorBD {
         return pedidoClienteController;
     }
     
+    private PedidoDistribuidorJpaController getPedidoDistribuidorController(){
+        if(pedidoDistribuidorController == null){
+            pedidoDistribuidorController = new PedidoDistribuidorJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return pedidoDistribuidorController;
+    }
+    
     private DistribuidorJpaController getDistribuidorController(){
         if(distribuidorController == null){
             distribuidorController = new DistribuidorJpaController(utx,
@@ -101,20 +117,20 @@ public class GestorBD {
         return distribuidorController;
     }
     
-    private TieneDistribuidorJpaController getTieneDistribuidorController(){
-        if(tieneDistribuidorController == null){
-            tieneDistribuidorController = new TieneDistribuidorJpaController(utx,
-                    em.getEntityManagerFactory());
-        }
-        return tieneDistribuidorController;
-    }
-    
     private TienePedidoClienteJpaController getTienePedidoClienteController(){
         if(tienePedidoClienteController == null){
             tienePedidoClienteController = new TienePedidoClienteJpaController(utx,
                     em.getEntityManagerFactory());
         }
         return tienePedidoClienteController;
+    }
+    
+    private TienePedidoDistribuidorJpaController getTienePedidoDistribuidorController(){
+        if(tienePedidoDistribuidorController == null){
+            tienePedidoDistribuidorController = new TienePedidoDistribuidorJpaController(utx,
+                    em.getEntityManagerFactory());
+        }
+        return tienePedidoDistribuidorController;
     }
     
     private StockJpaController getStockController(){
@@ -147,8 +163,7 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "pedidosPorEmpleado")
-    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> 
-    pedidosPorEmpleado(@WebParam(name = "empleado") final String empleado) {
+    public String pedidosPorEmpleado(@WebParam(name = "empleado") final String empleado) {
         List<PedidoClienteBean> pedidosBean = new ArrayList<PedidoClienteBean>();
         List<PedidoCliente> pedidos = getQueryController().getPedidosPorEmpleado(empleado);
         PedidoClienteBean pedidoBean;
@@ -157,7 +172,7 @@ public class GestorBD {
             pedidosBean.add(pedidoBean);
         }
         
-        return pedidosBean;
+        return GsonS.getGson().toJson(pedidosBean);
     }
 
     /**
@@ -372,8 +387,8 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "getProductosDistribuidor")
-    public java.util.List<com.gomez.bd.bean.ProductoBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {        
-        List<ProductoBean> productosBean = new ArrayList<>();
+    public java.util.List<com.gomez.bd.bean.StockBean> getProductosDistribuidor(@WebParam(name = "distribuidor") String distribuidor) {        
+        List<StockBean> stockBean = new ArrayList<>();
 
         List<TieneDistribuidor> productos = getQueryController().getProductosDistribuidor(distribuidor);
 
@@ -388,11 +403,13 @@ public class GestorBD {
             productoBean.setCategoria(producto.getProducto1().getMarca().getCategoria());
             productoBean.setImagen(producto.getProducto1().getImagen());
 
-            productosBean.add(productoBean);
-
+            StockBean stock = new StockBean();
+            stock.setCantidad(producto.getCantidad());
+            stock.setProducto(productoBean);
+            stockBean.add(stock);
         }
         
-        return productosBean;
+        return stockBean;
     }
     
     private PedidoClienteBean getPedidoClienteBean(PedidoCliente pedido){
@@ -475,7 +492,7 @@ public class GestorBD {
      */
     @WebMethod(operationName = "addPedidoCliente")
     public Boolean addPedidoCliente(@WebParam(name = "pedidoBean") PedidoClienteBean pedidoBean) {
-                PedidoCliente pedido;
+        PedidoCliente pedido;
         Cliente cliente ;
         TienePedidoCliente tienePedido;
         
@@ -484,7 +501,13 @@ public class GestorBD {
         cliente.setDni(getQueryController().getDni(pedidoBean.getCliente().getLogin()));
         
         pedido.setCliente(cliente);
-        //pedido.setFechaLllegada(pedidoBean.getFechaLlegada());
+
+        Random r = new Random();
+        int diaAleatorio = r.nextInt(MAX_DIAS)+1;
+        
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.add(Calendar.DAY_OF_YEAR, diaAleatorio);
+        pedido.setFechaLlegada(gc.getTime());
 
         
         try {
@@ -509,5 +532,83 @@ public class GestorBD {
             return false;
         }
     }
+
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "getPedidosPendientes")
+    public java.util.List<com.gomez.bd.bean.PedidoClienteBean> getPedidosPendientes() {
+        List<PedidoClienteBean> pedidosBean = new ArrayList<>();
+        List<PedidoCliente> pedidos = getQueryController().getPedidosPendientes();
+        PedidoClienteBean pedidoBean;
+        for(PedidoCliente pedido: pedidos){
+            pedidoBean = getPedidoClienteBean(pedido);
+            pedidosBean.add(pedidoBean);
+        }
+        return pedidosBean;
+    }
+
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "setEmpleadoPedidoCliente")
+    public Boolean setEmpleadoPedidoCliente(@WebParam(name = "_pedido") final int _pedido, @WebParam(name = "_empleado") final String _empleado) {
+        try {
+            Empleado empleado =
+                    getEmpleadoController().findEmpleado(_empleado);
+            PedidoCliente pedido =
+                    getPedidoClienteController().findPedidoCliente(_pedido);
+            pedido.setEmpleado(empleado);
+            getPedidoClienteController().edit(pedido);
+            return true; 
+        } catch (Exception ex) {
+            return false;
+        }
+    }
    
+        /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "addPedidoDistribuidor")
+    public Boolean addPedidoDistribuidor(@WebParam(name = "pedidoBean") PedidoDistribuidorBean pedidoBean) {
+        PedidoDistribuidor pedido;
+        Distribuidor distribuidor ;
+        TienePedidoDistribuidor tienePedido;
+        
+        pedido = new PedidoDistribuidor();
+        distribuidor = new Distribuidor();
+        distribuidor.setCifNif(getQueryController().getDni(pedidoBean.getDistribuidor().getCifNif()));
+        
+        pedido.setDistribuidor(distribuidor);
+
+        Random r = new Random();
+        int diaAleatorio = r.nextInt(MAX_DIAS)+1;
+        
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.add(Calendar.DAY_OF_YEAR, diaAleatorio);
+        pedido.setFechaLlegada(gc.getTime());
+
+        
+        try {
+            getPedidoDistribuidorController().create(pedido);
+            int id = getQueryController().getUltimoIdPedidoCliente();
+            pedido.setIdPedido(id);
+
+            for(StockBean stock: pedidoBean.getProductos()){
+                tienePedido = new TienePedidoDistribuidor();
+                Producto producto = new Producto();
+                producto.setCodigo(stock.getProducto().getCodigo());
+                tienePedido.setProducto1(producto);
+                tienePedido.setPedidoDistribuidor(pedido);
+                tienePedido.setCantidad(stock.getCantidad());
+
+
+                getTienePedidoDistribuidorController().create(tienePedido);
+            }
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
 }

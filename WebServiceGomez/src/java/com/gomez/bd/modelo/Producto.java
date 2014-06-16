@@ -76,6 +76,8 @@ public class Producto implements Serializable {
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "producto1")
     private Stock stock;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "producto1")
+    private List<TienePedidoDistribuidor> tienePedidoDistribuidorList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "producto1")
     private List<TieneDistribuidor> tieneDistribuidorList;
 
     public Producto() {
@@ -146,6 +148,15 @@ public class Producto implements Serializable {
 
     public void setStock(Stock stock) {
         this.stock = stock;
+    }
+
+    @XmlTransient
+    public List<TienePedidoDistribuidor> getTienePedidoDistribuidorList() {
+        return tienePedidoDistribuidorList;
+    }
+
+    public void setTienePedidoDistribuidorList(List<TienePedidoDistribuidor> tienePedidoDistribuidorList) {
+        this.tienePedidoDistribuidorList = tienePedidoDistribuidorList;
     }
 
     @XmlTransient
