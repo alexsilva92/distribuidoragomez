@@ -165,7 +165,7 @@ public class GestorBD {
      * Web service operation
      */
     @WebMethod(operationName = "loginEmpleado")
-    public boolean loginEmpleado(@WebParam(name = "login") String login, 
+    public String loginEmpleado(@WebParam(name = "login") String login, 
     @WebParam(name = "password") String password) {
         return getQueryController().loginEmpleado(login, password);
     }
@@ -618,7 +618,7 @@ public class GestorBD {
         }
     }
     
-    @WebMethod(operationName = "setEmpleadoPedidoCliente")
+    @WebMethod(operationName = "setEstadoPedidoCliente")
     public Boolean setEstadoPedidoCliente(@WebParam(name = "_pedido") final int _pedido, @WebParam(name = "_estado") final String _estado) {
         try {
             EstadoPedido estado =

@@ -63,7 +63,7 @@ public class QueryJpaController {
         }
     }
     
-    public boolean loginEmpleado(String login, String password){
+    public String loginEmpleado(String login, String password){
         EntityManager em = getEntityManager();
         Query q = em.createQuery("SELECT e FROM Empleado e WHERE "
                 + "e.login = :login AND e.password = :password");
@@ -73,12 +73,12 @@ public class QueryJpaController {
         try{
             Empleado empleado = (Empleado) q.getSingleResult();
             if(empleado != null){
-                return true;
+                return login;
             }else{
-                return false;
+                return null;
             }
         }catch(NoResultException  ex){
-            return false;
+            return null;
         }
     }
     
